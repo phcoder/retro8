@@ -29,7 +29,7 @@ namespace ui
     using view_t = View;
     static const size_t VIEW_COUNT = 1;
 
-    Texture* _font;
+    Surface _font;
 
   private:
     GameView* _gameView;
@@ -41,13 +41,13 @@ namespace ui
 
     bool loadData();
 
-    void handleKeyboardEvent(const SDL_Event& event, bool press);
+    void handleKeyboardEvent(const SDL_Event& event);
     void handleMouseEvent(const SDL_Event& event);
     void render();
 
     void deinit();
 
-    Texture* font() { return _font; }
+    const Surface& font() { return _font; }
 
     //TODO: hacky cast to avoid header inclusion
     GameView* gameView() { return _gameView; }

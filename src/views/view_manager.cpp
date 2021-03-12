@@ -13,7 +13,7 @@ using namespace ui;
 
 extern retro8::Machine machine;
 
-ui::ViewManager::ViewManager() : SDL<ui::ViewManager, ui::ViewManager>(*this, *this), _font(nullptr),
+ui::ViewManager::ViewManager() : SDL<ui::ViewManager, ui::ViewManager>(*this, *this), _font(),
 _gameView(new GameView(this)), _menuView(new MenuView(this))
 {
   _view = _gameView;
@@ -21,8 +21,7 @@ _gameView(new GameView(this)), _menuView(new MenuView(this))
 
 void ui::ViewManager::deinit()
 {
-  SDL::release(_font);
-
+  _font.release();
   SDL::deinit();
 }
 
@@ -31,22 +30,20 @@ bool ui::ViewManager::loadData()
   {
     constexpr size_t FONT_WIDTH = 128, FONT_HEIGHT = 80;
 
-    /* create texture for font
-       128x80 1bit per pixel font
-    */
-    SDL_RendererInfo info;
-    SDL_GetRendererInfo(_renderer, &info);
-    SDL_PixelFormat* format = SDL_AllocFormat(info.texture_formats[0]);
-    SDL_Surface* fontSurface = SDL_CreateRGBSurface(0, FONT_WIDTH, FONT_HEIGHT, 32, format->Rmask, format->Gmask, format->Bmask, format->Amask);
-    SDL_FreeFormat(format);
+    /* create texture for font 128x80 1bit per pixel font */
+    const SDL_PixelFormat* format = displayFormat();
 
-    auto pixels = static_cast<uint32_t*>(fontSurface->pixels);
+    _font = allocate(FONT_WIDTH, FONT_HEIGHT);
+    
     for (size_t i = 0; i < FONT_WIDTH*FONT_HEIGHT; ++i)
-      pixels[i] = (retro8::gfx::font_map[i / 8] & (1 << (7 - (i % 8)))) ? 0xffffffff : 0;
+      _font.pixel(i) = (retro8::gfx::font_map[i / 8] & (1 << (7 - (i % 8)))) ? 0xffffffff : 0;
 
-    _font = SDL_CreateTextureFromSurface(_renderer, fontSurface);
-    SDL_SetTextureBlendMode(_font, SDL_BLENDMODE_BLEND);
-    SDL_FreeSurface(fontSurface);
+#if !defined(SDL12)
+    _font.texture = SDL_CreateTextureFromSurface(renderer(), _font.surface);
+#endif
+
+    _font.enableBlending();
+    _font.releaseSurface();
   }
 
   machine.font().load();
@@ -54,7 +51,7 @@ bool ui::ViewManager::loadData()
   return true;
 }
 
-void ui::ViewManager::handleKeyboardEvent(const SDL_Event& event, bool press)
+void ui::ViewManager::handleKeyboardEvent(const SDL_Event& event)
 {
   _view->handleKeyboardEvent(event);
 }
@@ -94,16 +91,20 @@ void ViewManager::text(const std::string& text, int32_t x, int32_t y, SDL_Color 
   else if (align == TextAlign::RIGHT)
     x -= width;
 
-  SDL_SetTextureColorMod(_font, color.r, color.g, color.b);
+#if !defined(SDL12)
+  SDL_SetTextureColorMod(_font.texture, color.r, color.g, color.b);
+#endif
 
   for (size_t i = 0; i < text.length(); ++i)
   {
     SDL_Rect src = SDL_MakeRect(8 * (text[i] % GLYPHS_PER_ROW), 8 * (text[i] / GLYPHS_PER_ROW), 4, 6);
     SDL_Rect dest = SDL_MakeRect(x + 4 * i * scale, y, 4 * scale, 6 * scale);
-    SDL_RenderCopy(_renderer, _font, &src, &dest);
+    blit(_font, src, dest);
   }
 
-  SDL_SetTextureColorMod(_font, 255, 255, 255);
+#if !defined(SDL12)
+  SDL_SetTextureColorMod(_font.texture, 255, 255, 255);
+#endif
 }
 
 void ViewManager::openMenu()

@@ -93,12 +93,12 @@ retro8::io::PngData loadPng(const std::string& path)
   size_t length = fl.tellg();
 
   char* bdata = new char[length];
-  
+
   fl.seekg(0, std::ios::beg);
   fl.read(bdata, length);
 
   fl.close();
-  
+
   std::vector<uint8_t> out;
   unsigned long width, height;
   auto result = Platform::loadPNG(out, width, height, (uint8_t*)bdata, length, true);
@@ -127,8 +127,8 @@ r8::gfx::ColorTable colorTable;
 
 struct ColorMapper
 {
-  SDL_PixelFormat* format;
-  ColorMapper(SDL_PixelFormat* format) : format(format) { }
+  const SDL_PixelFormat* format;
+  ColorMapper(const SDL_PixelFormat* format) : format(format) { }
 
   inline r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const
   {
@@ -140,7 +140,7 @@ void GameView::rasterize()
 {
   auto* data = machine.memory().screenData();
   auto* screenPalette = machine.memory().paletteAt(r8::gfx::SCREEN_PALETTE_INDEX);
-  auto output = static_cast<uint32_t*>(_output->pixels);
+  uint32_t* output = _output.pixels();
 
   for (size_t i = 0; i < r8::gfx::BYTES_PER_SCREEN; ++i)
   {
@@ -161,27 +161,22 @@ void GameView::render()
 {
   if (!init)
   {
-    SDL_RendererInfo info;
-    SDL_GetRendererInfo(manager->renderer(), &info);
-    //SDL_PixelFormat* format = SDL_AllocFormat(SDL_GetWindowPixelFormat(manager->window()));
-
-    _format = SDL_AllocFormat(info.texture_formats[0]);
-
     LOGD("Initializing color table");
-    colorTable.init(ColorMapper(_format));
+    auto* format = manager->displayFormat();
+    colorTable.init(ColorMapper(manager->displayFormat()));
 
-    printf("Using renderer pixel format: %s\n", SDL_GetPixelFormatName(_format->format));
+#if !defined(SDL12)
+    printf("Using renderer pixel format: %s\n", SDL_GetPixelFormatName(format->format));
+#endif
 
     /* initialize main surface and its texture */
-    _output = SDL_CreateRGBSurface(0, 128, 128, 32, _format->Rmask, _format->Gmask, _format->Bmask, _format->Amask);
-    _outputTexture = SDL_CreateTexture(manager->renderer(), _format->format, SDL_TEXTUREACCESS_STREAMING, 128, 128);
+    _output = manager->allocate(128, 128);
 
     if (!_output)
     {
       printf("Unable to allocate buffer surface: %s\n", SDL_GetError());
     }
 
-    assert(_outputTexture);
     assert(_output);
 
     _frameCounter = 0;
@@ -191,7 +186,7 @@ void GameView::render()
 
 
     if (_path.empty())
-      _path = "cartridges/PicoKart.p8";
+      _path = "cartridges/pico-racer.png";
 
     if (r8::io::Loader::isPngCartridge(_path))
     {
@@ -209,7 +204,7 @@ void GameView::render()
       loader.loadFile(_path, machine);
       manager->setPngCartridge(nullptr);
     }
-    
+
     machine.memory().backupCartridge();
 
     int32_t fps = machine.code().require60fps() ? 60 : 30;
@@ -247,25 +242,20 @@ void GameView::render()
       rasterize();
     }
 
-    SDL_UpdateTexture(_outputTexture, nullptr, _output->pixels, _output->pitch);
+    _output.update();
   }
 
-SDL_Rect dest;
-  //Texture* texture = SDL_CreateTextureFromSurface(renderer, machine.screen());
-#ifdef _WIN32
-  dest = { (480 - 384) / 2, (480 - 384) / 2, 384, 384 };
-#else
+  SDL_Rect dest;
 
-if (_scaler == Scaler::UNSCALED)
-  dest = { (320 - 128) / 2, (240 - 128) / 2, 128, 128 };
-else if (_scaler == Scaler::SCALED_ASPECT_2x)
-  dest = { (320 - 256) / 2, (240 - 256) / 2, 256, 256 };
-else
-  dest = { 0, 0, 320, 240 };
-#endif
+  if (_scaler == Scaler::UNSCALED)
+    dest = { (SCREEN_WIDTH - 128) / 2, (SCREEN_HEIGHT - 128) / 2, 128, 128 };
+  else if (_scaler == Scaler::SCALED_ASPECT_2x)
+    dest = { (SCREEN_WIDTH - 256) / 2, (SCREEN_HEIGHT - 256) / 2, 256, 256 };
+  else
+    dest = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
 
-  SDL_RenderCopy(renderer, _outputTexture, nullptr, &dest);
- 
+  manager->blitToScreen(_output, dest);
+
   if (_showFPS)
   {
     char buffer[16];
@@ -359,82 +349,76 @@ else
 
 void GameView::handleKeyboardEvent(const SDL_Event& event)
 {
-  if (!event.key.repeat)
+  switch (event.key.keysym.sym)
   {
-    switch (event.key.keysym.sym)
+  case KEY_LEFT:
+    _input.manageKey(0, 0, event.type == SDL_KEYDOWN);
+    break;
+  case KEY_RIGHT:
+    _input.manageKey(0, 1, event.type == SDL_KEYDOWN);
+    break;
+  case KEY_UP:
+    _input.manageKey(0, 2, event.type == SDL_KEYDOWN);
+    break;
+  case KEY_DOWN:
+    _input.manageKey(0, 3, event.type == SDL_KEYDOWN);
+    break;
+
+  case KEY_ACTION1_1:
+    _input.manageKey(0, 4, event.type == SDL_KEYDOWN);
+    break;
+
+  case KEY_ACTION1_2:
+    _input.manageKey(0, 5, event.type == SDL_KEYDOWN);
+    break;
+
+  case KEY_ACTION2_1:
+    _input.manageKey(1, 4, event.type == SDL_KEYDOWN);
+    break;
+
+  case KEY_ACTION2_2:
+    _input.manageKey(1, 5, event.type == SDL_KEYDOWN);
+    break;
+
+  case KEY_MUTE:
+  {
+    if (event.type == SDL_KEYDOWN)
     {
-    case SDLK_LEFT:
-      _input.manageKey(0, 0, event.type == SDL_KEYDOWN);
-      break;
-    case SDLK_RIGHT:
-      _input.manageKey(0, 1, event.type == SDL_KEYDOWN);
-      break;
-    case SDLK_UP:
-      _input.manageKey(0, 2, event.type == SDL_KEYDOWN);
-      break;
-    case SDLK_DOWN:
-      _input.manageKey(0, 3, event.type == SDL_KEYDOWN);
-      break;
+      bool s = machine.sound().isMusicEnabled();
+      machine.sound().toggleMusic(!s);
+      machine.sound().toggleSound(!s);
+    }
+    break;
+  }
 
-    case SDLK_z:
-    case SDLK_LCTRL:
-      _input.manageKey(0, 4, event.type == SDL_KEYDOWN);
-      break;
+  case KEY_PAUSE:
+    if (event.type == SDL_KEYDOWN)
+      if (_paused)
+        pause();
+      else
+        resume();
+    break;
 
-    case SDLK_x:
-    case SDLK_LALT:
-      _input.manageKey(0, 5, event.type == SDL_KEYDOWN);
-      break;
-
-    case SDLK_a:
-    case SDLK_SPACE:
-      _input.manageKey(1, 4, event.type == SDL_KEYDOWN);
-      break;
-
-    case SDLK_s:
-    case SDLK_LSHIFT:
-      _input.manageKey(1, 5, event.type == SDL_KEYDOWN);
-      break;
-
-    case SDLK_m:
+  case KEY_NEXT_SCALER:
+    if (event.type == SDL_KEYDOWN)
     {
-      if (event.type == SDL_KEYDOWN)
-      {
-        bool s = machine.sound().isMusicEnabled();
-        machine.sound().toggleMusic(!s);
-        machine.sound().toggleSound(!s);
-      }
-      break;
-    }
-
-#if DESKTOP_MODE
-    case SDLK_p:
-      if (event.type == SDL_KEYDOWN)
-        if (_paused)
-          pause();
-        else
-          resume();
-      break;
-#else
-    case SDLK_TAB:
-      if (event.type == SDL_KEYDOWN)
-      {
-        if (_scaler < Scaler::LAST) _scaler = Scaler(_scaler + 1);
-        else _scaler = Scaler::FIRST;
-    }
-      break;
-#endif
-
-    case SDLK_RETURN:
-      manager->openMenu();
-      break;
-
-    case SDLK_ESCAPE:
-      if (event.type == SDL_KEYDOWN)
-        manager->exit();
-      break;
+      if (_scaler < Scaler::LAST) _scaler = Scaler(_scaler + 1);
+      else _scaler = Scaler::FIRST;
   }
-  }
+    break;
+
+  case KEY_MENU:
+    manager->openMenu();
+    break;
+
+  case KEY_EXIT:
+    if (event.type == SDL_KEYDOWN)
+      manager->exit();
+    break;
+
+  default:
+    break;
+}
 }
 
 void GameView::handleMouseEvent(const SDL_Event& event)
@@ -462,9 +446,7 @@ void GameView::resume()
 
 GameView::~GameView()
 {
-  SDL_FreeFormat(_format);
-  SDL_FreeSurface(_output);
-  SDL_DestroyTexture(_outputTexture);
+  _output.release();
   //TODO: the _init future is not destroyed
   sdlAudio.close();
 }

@@ -18,6 +18,10 @@
 * Power slider in down position - SDLK_PAUSE
 */
 
+#if defined(SDL12)
+  extern "C" { FILE __iob_func[3] = { *stdin,*stdout,*stderr }; }
+#endif
+
 #if TEST_MODE
 extern int testMain(int argc, char* argv[]);
 #endif
@@ -35,7 +39,7 @@ int main(int argc, char* argv[])
   
   if (!ui.loadData())
   {
-    printf("Error while loading and initializing data.\n");
+    LOGD("Error while loading and initializing data.\n");
     ui.deinit();
     return -1;
   }
