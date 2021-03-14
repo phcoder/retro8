@@ -31,6 +31,9 @@ else ifneq ($(findstring Darwin,$(shell uname -a)),)
         ifeq ($(shell uname -p),powerpc)
 		arch = ppc
         endif
+	ifeq ($(shell uname -p),arm)
+		arch = arm
+	endif
 ifeq ($(shell uname -p),powerpc)
 	arch = ppc
 endif
@@ -78,6 +81,7 @@ endif
 ifeq ($(OSX_LT_MAVERICKS),"NO")
    CXXFLAGS  += -stdlib=libc++
    CPPFLAGS  += -stdlib=libc++
+   LDFLAGS   += -stdlib=libc++
 endif
 
 
