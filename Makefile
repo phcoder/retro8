@@ -1,10 +1,6 @@
 STATIC_LINKING := 0
 AR             := ar
 
-ifneq ($(V),1)
-   Q := @
-endif
-
 ifneq ($(SANITIZER),)
    CFLAGS   := -fsanitize=$(SANITIZER) $(CFLAGS)
    CXXFLAGS := -fsanitize=$(SANITIZER) $(CXXFLAGS)
@@ -186,18 +182,15 @@ $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else
-	@$(if $(Q), $(shell echo echo LD $@),)
 	$(CXX) $(fpic) $(SHARED) -o $@ $(OBJECTS) $(LIBS) $(LDFLAGS)
 endif
 
 
 %.o: %.c
-	@$(if $(Q), $(shell echo echo CC $<),)
-	$(Q)$(CC) $(CFLAGS) $(fpic) -c -o $@ $<
+	$(CC) $(CFLAGS) $(fpic) -c -o $@ $<
 
 %.o: %.cpp
-	@$(if $(Q), $(shell echo echo CXX $<),)
-	$(Q)$(CXX) $(CXXFLAGS) $(fpic) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(fpic) -c -o $@ $<
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
