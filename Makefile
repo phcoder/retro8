@@ -118,6 +118,9 @@ else
 endif
 ifeq ($(platform),$(filter $(platform),ios9 ios-arm64))
    MINVERSION = -miphoneos-version-min=8.0
+   CXXFLAGS  += -stdlib=libc++
+   CPPFLAGS  += -stdlib=libc++
+   LDFLAGS   += -stdlib=libc++
 else
    MINVERSION = -miphoneos-version-min=5.0
 endif
