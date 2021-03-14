@@ -79,6 +79,11 @@ else
 endif
 endif
 
+ifeq ($(OSX_LT_MAVERICKS),"NO")
+   CXXFLAGS  += -stdlib=libc++
+   CPPFLAGS  += -stdlib=libc++
+endif
+
 
    ifeq ($(CROSS_COMPILE),1)
 		TARGET_RULE   = -target $(LIBRETRO_APPLE_PLATFORM) -isysroot $(LIBRETRO_APPLE_ISYSROOT)
