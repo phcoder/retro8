@@ -154,6 +154,22 @@ else ifeq ($(platform), libnx)
    CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math
    CXXFLAGS := $(ASFLAGS) $(CFLAGS)
    STATIC_LINKING = 1
+else ifeq ($(platform), retrofw)
+   EXT ?= so
+   TARGET := $(TARGET_NAME)_libretro.$(EXT)
+   CC = /opt/retrofw-toolchain/usr/bin/mipsel-linux-gcc
+   CXX = /opt/retrofw-toolchain/usr/bin/mipsel-linux-g++
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=$(CORE_DIR)/link.T -Wl,--no-undefined
+   LIBS += -lpthread
+   CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32 -mhard-float
+   CFLAGS += -ffunction-sections -fdata-sections -flto -mplt 
+   CFLAGS += -falign-functions=1 -falign-jumps=1 -falign-loops=1
+   CFLAGS += -fomit-frame-pointer -ffast-math -fmerge-all-constants 
+   CFLAGS += -funsafe-math-optimizations -fsingle-precision-constant -fexpensive-optimizations
+   CFLAGS += -fno-unwind-tables -fno-asynchronous-unwind-tables 
+   CFLAGS += -fmerge-all-constants -fno-math-errno -fno-stack-protector -fno-ident    
+   CXXFLAGS := $(ASFLAGS) $(CFLAGS)
 else ifeq ($(platform), vita)
    TARGET := $(TARGET_NAME)_vita.a
    CC = arm-vita-eabi-gcc
@@ -171,6 +187,9 @@ LDFLAGS += $(LIBM)
 ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g -DDEBUG
    CXXFLAGS += -O0 -g -DDEBUG
+else ifeq ($(platform), retrofw)
+	CFLAGS += -Ofast
+	CXXFLAGS += -Ofast
 else
    CFLAGS += -O3
    CXXFLAGS += -O3
