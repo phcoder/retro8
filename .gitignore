@@ -1,4 +1,8 @@
 *.o
+*.dll
+*.so
+*.so.*
+*.dylib
 projects/vs2017/libs/**
 projects/opendingux/**
 projects/funkey/**
