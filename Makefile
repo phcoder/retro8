@@ -49,6 +49,11 @@ ifeq ($(STATIC_LINKING), 1)
 EXT := a
 endif
 
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CXXFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 ifneq (,$(findstring unix,$(platform)))
 	EXT ?= so
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
