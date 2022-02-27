@@ -192,6 +192,14 @@ else ifeq ($(platform), vita)
    AR = arm-vita-eabi-ar
    CXXFLAGS += -Wl,-q -Wall -O3
 	STATIC_LINKING = 1
+# PSP
+else ifeq ($(platform), psp1)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = psp-gcc
+	AR = psp-ar
+	CFLAGS += -G0 -DPSP -DUSE_RGB565
+	CXXFLAGS += -G0 -DPSP -DUSE_RGB565
+	STATIC_LINKING=1
 else
    CC ?= gcc
    TARGET := $(TARGET_NAME)_libretro.dll
