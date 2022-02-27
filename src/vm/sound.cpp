@@ -413,7 +413,7 @@ void APU::renderSounds(int16_t* dest, size_t totalSamples)
         {
           /* generate the maximum amount of samples available for same note */
           // TODO: optimize if next note is equal to current
-          size_t available = std::min(samples, samplePerTick - (channel.position % samplePerTick));
+          size_t available = std::min<ssize_t>(samples, samplePerTick - (channel.position % samplePerTick));
           renderSound(channel, buffer, available);
 
           samples -= available;
