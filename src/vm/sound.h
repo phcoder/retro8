@@ -5,7 +5,12 @@
 
 #include <array>
 #include <vector>
+#ifdef __LIBRETRO__
+#include "slock_wrapper.h"
+#endif
+#ifndef USE_SLOCK_WRAPPER
 #include <mutex>
+#endif
 
 #if SOUND_ENABLED
 
@@ -200,7 +205,11 @@ namespace retro8
       std::array<SoundState, CHANNEL_COUNT> channels;
       MusicState mstate;
 
+#ifdef USE_SLOCK_WRAPPER
+      slock_wrap queueMutex;
+#else
       std::mutex queueMutex;
+#endif
       std::vector<Command> queue;
 
       bool _soundEnabled, _musicEnabled;
