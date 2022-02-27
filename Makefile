@@ -239,6 +239,10 @@ else ifeq ($(platform), ctr)
 	CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
 	CFLAGS += -Wall -mword-relocations
 	CFLAGS += -fomit-frame-pointer -ffast-math
+	CXXFLAGS += -DARM11 -D_3DS
+	CXXFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
+	CXXFLAGS += -Wall -mword-relocations
+	CXXFLAGS += -fomit-frame-pointer -ffast-math
 	HAVE_RZLIB := 1
 	DISABLE_ERROR_LOGGING := 1
 	ARM = 1
