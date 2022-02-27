@@ -91,7 +91,7 @@ extern "C"
 
   void retro_get_system_info(retro_system_info* info)
   {
-    std::memset(info, 0, sizeof(info));
+    std::memset(info, 0, sizeof(*info));
 
     info->library_name = "retro-8 (alpha)";
     info->library_version = "0.1b";
