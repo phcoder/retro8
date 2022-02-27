@@ -339,10 +339,13 @@ else ifeq ($(platform), windows_msvc2005_x86)
 	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VS80COMNTOOLS)../../VC/lib")
 	BIN := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/bin")
 
-	WindowsSdkDir := $(INETSDK)
+        WindowsSdkDir := $(shell reg query "HKLM\SOFTWARE\Microsoft\MicrosoftSDK\InstalledSDKs\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3" -v "Install Dir" | grep -io '[A-Z]:\\.*')
 
-	export INCLUDE := $(INCLUDE);$(INETSDK)/Include;src/libretro/libretro-common/include/compat/msvc
-	export LIB := $(LIB);$(WindowsSdkDir);$(INETSDK)/Lib
+        WindowsSDKIncludeDir := $(shell cygpath -w "$(WindowsSdkDir)\Include")
+        WindowsSDKLibDir := $(shell cygpath -w "$(WindowsSdkDir)\Lib")
+
+        INCLUDE := $(INCLUDE);$(WindowsSDKIncludeDir);$(WindowsSDKAtlIncludeDir);$(WindowsSDKCrtIncludeDir);$(WindowsSDKGlIncludeDir);$(WindowsSDKMfcIncludeDir);libretro/msvc/msvc-2005
+        LIB := $(LIB);$(WindowsSDKLibDir)
 	TARGET := $(TARGET_NAME)_libretro.dll
 	PSS_STYLE :=2
 	LDFLAGS += -DLL
