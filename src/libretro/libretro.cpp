@@ -8,6 +8,7 @@
 #include "vm/machine.h"
 #include "vm/input.h"
 
+#include <stdio.h>
 #include <cstdarg>
 #include <cstring>
 
