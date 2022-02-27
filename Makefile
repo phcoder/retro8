@@ -266,6 +266,82 @@ else ifeq ($(platform), ps2)
 	CFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
 	CXXFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
 	STATIC_LINKING=1
+# Windows MSVC 2010 x64
+else ifeq ($(platform), windows_msvc2010_x64)
+	CC  = cl.exe -TP
+	CXX = cl.exe
+
+	CFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+	CXXFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+
+	PATH := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/bin/amd64"):$(PATH)
+	PATH := $(PATH):$(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../IDE")
+	LIB := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/lib/amd64")
+	INCLUDE := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/include")
+
+	WindowsSdkDir := $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')
+	WindowsSdkDir ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')
+
+	WindowsSDKIncludeDir := $(shell cygpath -w "$(WindowsSdkDir)\Include")
+	WindowsSDKGlIncludeDir := $(shell cygpath -w "$(WindowsSdkDir)\Include\gl")
+	WindowsSDKLibDir := $(shell cygpath -w "$(WindowsSdkDir)\Lib\x64")
+
+	INCFLAGS_PLATFORM = -I"$(WindowsSdkDirInc)"
+	export INCLUDE := $(INCLUDE);$(WindowsSDKIncludeDir);$(WindowsSDKGlIncludeDir)
+	export LIB := $(LIB);$(WindowsSDKLibDir)
+
+	TARGET := $(TARGET_NAME)_libretro.dll
+	LDFLAGS += -DLL
+
+# Windows MSVC 2010 x86
+else ifeq ($(platform), windows_msvc2010_x86)
+	CC  = cl.exe -TP
+	CXX = cl.exe
+
+	CFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+	CXXFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+
+	PATH := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/bin"):$(PATH)
+	PATH := $(PATH):$(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../IDE")
+	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VS100COMNTOOLS)../../VC/lib")
+	INCLUDE := $(shell IFS=$$'\n'; cygpath "$(VS100COMNTOOLS)../../VC/include")
+
+	WindowsSdkDir := $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')
+	WindowsSdkDir ?= $(shell reg query "HKLM\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0A" -v "InstallationFolder" | grep -o '[A-Z]:\\.*')
+
+	WindowsSDKIncludeDir := $(shell cygpath -w "$(WindowsSdkDir)\Include")
+	WindowsSDKGlIncludeDir := $(shell cygpath -w "$(WindowsSdkDir)\Include\gl")
+	WindowsSDKLibDir := $(shell cygpath -w "$(WindowsSdkDir)\Lib")
+
+	INCFLAGS_PLATFORM = -I"$(WindowsSdkDirInc)"
+	export INCLUDE := $(INCLUDE);$(WindowsSDKIncludeDir);$(WindowsSDKGlIncludeDir)
+	export LIB := $(LIB);$(WindowsSDKLibDir)
+	TARGET := $(TARGET_NAME)_libretro.dll
+	LDFLAGS += -DLL
+
+# Windows MSVC 2005 x86
+else ifeq ($(platform), windows_msvc2005_x86)
+	CC  = cl.exe -TP
+	CXX = cl.exe
+
+	CFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+	CXXFLAGS += -wd4711 -wd4514 -wd4820 -DUSE_RGB565=1
+
+	PATH := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/bin"):$(PATH)
+	PATH := $(PATH):$(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../IDE")
+	INCLUDE := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/include")
+	LIB := $(shell IFS=$$'\n'; cygpath -w "$(VS80COMNTOOLS)../../VC/lib")
+	BIN := $(shell IFS=$$'\n'; cygpath "$(VS80COMNTOOLS)../../VC/bin")
+
+	WindowsSdkDir := $(INETSDK)
+
+	export INCLUDE := $(INCLUDE);$(INETSDK)/Include;src/libretro/libretro-common/include/compat/msvc
+	export LIB := $(LIB);$(WindowsSdkDir);$(INETSDK)/Lib
+	TARGET := $(TARGET_NAME)_libretro.dll
+	PSS_STYLE :=2
+	LDFLAGS += -DLL
+	CFLAGS += -D_CRT_SECURE_NO_DEPRECATE
+	LIBS =
 else
    CC ?= gcc
    TARGET := $(TARGET_NAME)_libretro.dll
