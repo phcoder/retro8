@@ -150,9 +150,6 @@ void DSP::fadeOut(int16_t amplitude, int16_t* dest, size_t samples)
   }
 }
 
-static int pos = 0;
-static float period = 44100 / 440.0f;
-
 DSP dsp(44100);
 
 // C C# D D# E F F# G G# A A# B
