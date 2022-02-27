@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(_3DS) || defined(__PSP__)
+#if defined(_3DS) || defined(__PSP__) || defined(PS2) || defined(WIIU)
 #define USE_SLOCK_WRAPPER 1
 #endif
 

@@ -1,6 +1,23 @@
 #include "slock_wrapper.h"
 
-#ifdef USE_SLOCK_WRAPPER
+#ifndef USE_SLOCK_WRAPPER
+#elif defined(PS2) || defined(WIIU) // Single-threaded
+slock_wrap::slock_wrap() {
+}
+
+slock_wrap::~slock_wrap() {
+}
+
+void slock_wrap::lock() {
+}
+
+void slock_wrap::unlock() {
+}
+
+bool slock_wrap::try_lock() {
+  return true;
+}
+#else
 slock_t *slock_new(void);
 void slock_free(slock_t *lock);
 void slock_lock(slock_t *lock);
