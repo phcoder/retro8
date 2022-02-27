@@ -18,12 +18,14 @@ bool slock_wrap::try_lock() {
   return true;
 }
 #else
+extern "C" {
 slock_t *slock_new(void);
 void slock_free(slock_t *lock);
 void slock_lock(slock_t *lock);
 void slock_unlock(slock_t *lock);
 void slock_free(slock_t *lock);
 bool slock_try_lock(slock_t *lock);
+}
 
 slock_wrap::slock_wrap() {
   slck = slock_new();
