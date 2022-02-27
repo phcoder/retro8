@@ -226,10 +226,16 @@ extern "C"
 
         std::vector<uint8_t> out;
         unsigned long width, height;
-        auto result = Platform::loadPNG(out, width, height, (uint8_t*)bdata, info->size, true);
+        int result = Platform::loadPNG(out, width, height, (uint8_t*)bdata, info->size, true);
         assert(result == 0);
         r8::io::Stegano stegano;
-        stegano.load({ reinterpret_cast<const uint32_t*>(out.data()), nullptr, out.size() / 4 }, machine);
+        uint32_t *buf = new uint32_t[out.size() / 4];
+        for (int i = 0; i < out.size() / 4; i++) {
+          buf[i] = out[4 * i] | (out[4 * i + 1] << 8) | (out[4 * i + 2] << 16) | (out[4 * i + 3] << 24);
+        }
+        r8::io::PngData pngData = { buf, NULL, out.size() / 4 };
+        stegano.load(pngData, machine);
+        delete[] buf;
       }
       else
       {
