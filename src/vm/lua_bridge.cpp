@@ -247,7 +247,7 @@ namespace draw
       uint8_t w = lua_tonumber(L, 3);
       uint8_t h = lua_tonumber(L, 4);
 
-      machine.memory().clipRect()->set(x0, y0, std::min(x0 + w, int32_t(gfx::SCREEN_WIDTH-1)), std::min(y0 + h, int32_t(gfx::SCREEN_HEIGHT-1)));
+      machine.memory().clipRect()->set(x0, y0, std::min<int32_t>(x0 + w, gfx::SCREEN_WIDTH-1), std::min<int32_t>(y0 + h, gfx::SCREEN_HEIGHT-1));
     }
 
     return 0;
