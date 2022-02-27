@@ -154,6 +154,30 @@ else ifeq ($(platform), libnx)
    CFLAGS += -march=armv8-a -mtune=cortex-a57 -mtp=soft -mcpu=cortex-a57+crc+fp+simd -ffast-math
    CXXFLAGS := $(ASFLAGS) $(CFLAGS)
    STATIC_LINKING = 1
+# Nintendo Game Cube
+else ifeq ($(platform), ngc)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+	PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
+	HAVE_RZLIB := 1
+	STATIC_LINKING=1
+# Nintendo Wii
+else ifeq ($(platform), wii)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+	PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+	HAVE_RZLIB := 1
+	STATIC_LINKING=1
+# Nintendo WiiU
+else ifeq ($(platform), wiiu)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+	PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float
+	HAVE_RZLIB := 1
+	STATIC_LINKING=1
 else ifeq ($(platform), retrofw)
    EXT ?= so
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -199,6 +223,48 @@ else ifeq ($(platform), psp1)
 	AR = psp-ar
 	CFLAGS += -G0 -DPSP -DUSE_RGB565
 	CXXFLAGS += -G0 -DPSP -DUSE_RGB565
+	STATIC_LINKING=1
+# CTR/3DS
+else ifeq ($(platform), ctr)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
+	AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
+	CFLAGS += -DARM11 -D_3DS
+	CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
+	CFLAGS += -Wall -mword-relocations
+	CFLAGS += -fomit-frame-pointer -ffast-math
+	HAVE_RZLIB := 1
+	DISABLE_ERROR_LOGGING := 1
+	ARM = 1
+	STATIC_LINKING=1
+# GCW0
+else ifeq ($(platform), gcw0)
+	TARGET := $(TARGET_NAME)_libretro.so
+	CC = /opt/gcw0-toolchain/usr/bin/mipsel-linux-gcc
+	AR = /opt/gcw0-toolchain/usr/bin/mipsel-linux-ar
+	fpic := -fPIC
+	SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
+	DISABLE_ERROR_LOGGING := 1
+	CFLAGS += -march=mips32 -mtune=mips32r2 -mhard-float
+	LIBS = -lm
+# RS90
+else ifeq ($(platform), rs90)
+   TARGET := $(TARGET_NAME)_libretro.so
+   CC = /opt/rs90-toolchain/usr/bin/mipsel-linux-gcc
+   CXX = /opt/rs90-toolchain/usr/bin/mipsel-linux-g++
+   AR = /opt/rs90-toolchain/usr/bin/mipsel-linux-ar
+   fpic := -fPIC
+   SHARED := -shared -Wl,-version-script=$(CORE_DIR)/link.T
+   PLATFORM_DEFINES := -DCC_RESAMPLER -DCC_RESAMPLER_NO_HIGHPASS
+   CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32
+   CXXFLAGS += $(CFLAGS)
+# PS2
+else ifeq ($(platform), ps2)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = mips64r5900el-ps2-elf-gcc
+	AR = mips64r5900el-ps2-elf-ar
+	CFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
+	CXXFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
 	STATIC_LINKING=1
 else
    CC ?= gcc
