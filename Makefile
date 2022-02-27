@@ -187,8 +187,9 @@ else ifeq ($(platform), miyoo)
    CFLAGS += -fmerge-all-constants -fno-math-errno -fno-stack-protector -fno-ident    
    CXXFLAGS := $(ASFLAGS) $(CFLAGS)
 else ifeq ($(platform), vita)
-   TARGET := $(TARGET_NAME)_vita.a
+   TARGET := $(TARGET_NAME)_libretro_vita.a
    CC = arm-vita-eabi-gcc
+   CXX = arm-vita-eabi-g++
    AR = arm-vita-eabi-ar
    CXXFLAGS += -Wl,-q -Wall -O3
 	STATIC_LINKING = 1
