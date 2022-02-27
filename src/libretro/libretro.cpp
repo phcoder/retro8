@@ -255,10 +255,15 @@ extern "C"
 
       screen16 = NULL;
       screen32 = NULL;
-      if (!tryScreen32() && !tryScreen16()) {
-	env.logger(retro_log_level::RETRO_LOG_ERROR, "Couldn't find compatible pixel format\n");
-	return false;
-      }
+#ifdef USE_RGB565
+      if (!tryScreen16() && !tryScreen32())
+#else
+      if (!tryScreen32() && !tryScreen16())
+#endif
+	{
+	  env.logger(retro_log_level::RETRO_LOG_ERROR, "Couldn't find compatible pixel format\n");
+	  return false;
+	}
 
       return true;
     }
