@@ -53,9 +53,9 @@ include:
 
   ################################## CONSOLES ################################
   # PlayStation Vita
-  #- project: 'libretro-infrastructure/ci-templates'
-    #file: '/vita-static.yml'
-    
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/vita-static.yml'
+
   # Nintendo GameCube
   #- project: 'libretro-infrastructure/ci-templates'
     #file: '/ngc-static.yml'
@@ -185,10 +185,10 @@ libretro-build-tvos-arm64:
     #- .core-defs
     
 # PlayStation Vita
-#libretro-build-vita:
-  #extends:
-    #- .libretro-vita-static-retroarch-master
-    #- .core-defs
+libretro-build-vita:
+  extends:
+    - .libretro-vita-static-retroarch-master
+    - .core-defs
 
 # RetroFW
 libretro-build-retrofw-mips32:
