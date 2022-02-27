@@ -160,7 +160,8 @@ else ifeq ($(platform), ngc)
 	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
 	CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
 	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-	PLATFORM_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
+	CFLAGS += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
+	CXXFLAGS += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float
 	HAVE_RZLIB := 1
 	STATIC_LINKING=1
 # Nintendo Wii
@@ -169,7 +170,8 @@ else ifeq ($(platform), wii)
 	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
 	CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
 	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-	PLATFORM_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+	CFLAGS += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
+	CXXFLAGS += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float
 	HAVE_RZLIB := 1
 	STATIC_LINKING=1
 # Nintendo WiiU
@@ -178,7 +180,8 @@ else ifeq ($(platform), wiiu)
 	CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
 	CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
 	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-	PLATFORM_DEFINES += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float
+	CFLAGS += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float
+	CXXFLAGS += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float
 	HAVE_RZLIB := 1
 	STATIC_LINKING=1
 else ifeq ($(platform), retrofw)
@@ -265,7 +268,6 @@ else ifeq ($(platform), rs90)
    AR = /opt/rs90-toolchain/usr/bin/mipsel-linux-ar
    fpic := -fPIC
    SHARED := -shared -Wl,-version-script=$(CORE_DIR)/link.T
-   PLATFORM_DEFINES := -DCC_RESAMPLER -DCC_RESAMPLER_NO_HIGHPASS
    CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32
    CXXFLAGS += $(CFLAGS)
 # PS2
