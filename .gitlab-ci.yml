@@ -56,6 +56,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
 
+  # Nintendo 3DS
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ctr-static.yml'
+
   # Nintendo GameCube
   #- project: 'libretro-infrastructure/ci-templates'
     #file: '/ngc-static.yml'
@@ -176,6 +180,12 @@ libretro-build-tvos-arm64:
     - .core-defs
     
 ################################### CONSOLES #################################
+# Nintendo 3DS
+libretro-build-ctr:
+  extends:
+    - .libretro-ctr-static-retroarch-master
+    - .core-defs
+
 # Nintendo GameCube
 #libretro-build-ngc:
   #extends:
