@@ -8,13 +8,13 @@
 #include "vm/machine.h"
 #include "vm/input.h"
 
+#include <stdio.h>
 #include <cstdarg>
 #include <cstring>
 
 #define LIBRETRO_LOG(x, ...) env.logger(retro_log_level::RETRO_LOG_INFO, x # __VA_ARGS__)
 
 namespace r8 = retro8;
-using pixel_t = uint32_t;
 
 constexpr int SAMPLE_RATE = 44100;
 constexpr int SAMPLES_PER_FRAME = SAMPLE_RATE / 60;
@@ -24,8 +24,66 @@ r8::Machine machine;
 r8::io::Loader loader;
 
 r8::input::InputManager input;
-r8::gfx::ColorTable colorTable;
-pixel_t* screen;
+template <typename pixel_t>
+class Screen {
+public:
+  ~Screen() {
+    delete[] buffer;
+  }
+
+  void draw(const r8::gfx::color_byte_t *data, r8::gfx::palette_t *palette) {
+    auto pointer = buffer;
+
+    for (size_t i = 0; i < r8::gfx::BYTES_PER_SCREEN; ++i) {
+      const r8::gfx::color_byte_t* pixels = data + i;
+      const auto rc1 = colorTable.get(palette->get((pixels)->low()));
+      const auto rc2 = colorTable.get(palette->get((pixels)->high()));
+
+      *(pointer) = rc1;
+      *((pointer)+1) = rc2;
+      (pointer) += 2;
+    }
+  }
+
+  const pixel_t *getBuffer() {
+    return buffer;
+  }
+protected:
+  Screen(): buffer(new pixel_t[r8::gfx::SCREEN_WIDTH * r8::gfx::SCREEN_HEIGHT]) {
+  }
+
+protected:
+  r8::gfx::ColorTable colorTable;
+private:
+  pixel_t *buffer;
+};
+
+struct Screen32 : Screen<uint32_t> {
+public:
+  Screen32() {
+    colorTable.init(ColorMapper32());
+  }
+private:
+  struct ColorMapper32
+  {
+    r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const { return 0xff000000 | (r << 16) | (g << 8) | b; }
+  };
+};
+
+struct Screen16 : Screen<uint16_t> {
+public:
+  Screen16() {
+    colorTable.init(ColorMapper16());
+  }
+private:
+  struct ColorMapper16
+  {
+    r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const { return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | ((b & 0xf8) >> 3); }
+  };
+};
+
+Screen16 *screen16;
+Screen32 *screen32;
 int16_t* audioBuffer;
 
 static void fallback_log(enum retro_log_level level, const char *fmt, ...)
@@ -45,20 +103,37 @@ struct RetroArchEnv
   retro_input_poll_t inputPoll;
   retro_input_state_t inputState;
   retro_log_printf_t logger = fallback_log;
+  retro_environment_t retro_cb;
 
   uint32_t frameCounter;
   uint16_t buttonState;
+  bool isRGB32;
 };
 
 RetroArchEnv env;
 
-struct ColorMapper
-{
-  r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const { return 0xff000000 | (r << 16) | (g << 8) | b; }
-};
-
 //TODO
 uint32_t Platform::getTicks() { return 0; }
+
+static bool tryScreen32() {
+  retro_pixel_format pixelFormat = RETRO_PIXEL_FORMAT_XRGB8888;
+  if (!env.retro_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &pixelFormat))
+    return false;
+  env.isRGB32 = true;
+  screen32 = new Screen32();
+  env.logger(retro_log_level::RETRO_LOG_INFO, "Initializing XRGB8888 screen buffer of %d bytes\n", 4*r8::gfx::SCREEN_WIDTH*r8::gfx::SCREEN_HEIGHT);
+  return true;
+}
+
+static bool tryScreen16() {
+  retro_pixel_format pixelFormat = RETRO_PIXEL_FORMAT_RGB565;
+  if (!env.retro_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &pixelFormat))
+    return false;
+  env.isRGB32 = false;
+  screen16 = new Screen16();
+  env.logger(retro_log_level::RETRO_LOG_INFO, "Initializing RGB565 screen buffer of %d bytes\n", 2*r8::gfx::SCREEN_WIDTH*r8::gfx::SCREEN_HEIGHT);
+  return true;
+}
 
 extern "C"
 {
@@ -69,13 +144,9 @@ extern "C"
 
   void retro_init()
   {
-    screen = new pixel_t[r8::gfx::SCREEN_WIDTH * r8::gfx::SCREEN_HEIGHT];
-    env.logger(retro_log_level::RETRO_LOG_INFO, "Initializing screen buffer of %d bytes\n", sizeof(pixel_t)*r8::gfx::SCREEN_WIDTH*r8::gfx::SCREEN_HEIGHT);
-
     audioBuffer = new int16_t[SAMPLE_RATE * 2];
     env.logger(retro_log_level::RETRO_LOG_INFO, "Initializing audio buffer of %d bytes\n", sizeof(int16_t) * SAMPLE_RATE * 2);
 
-    colorTable.init(ColorMapper());
     machine.font().load();
     machine.code().loadAPI();
     input.setMachine(&machine);
@@ -83,7 +154,6 @@ extern "C"
 
   void retro_deinit()
   {
-    delete[] screen;
     delete[] audioBuffer;
     //TODO: release all structures bound to Lua etc
   }
@@ -114,8 +184,7 @@ extern "C"
 
   void retro_set_environment(retro_environment_t e)
   {
-    retro_pixel_format pixelFormat = RETRO_PIXEL_FORMAT_XRGB8888;
-    e(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &pixelFormat);
+    env.retro_cb = e;
 
     retro_log_callback logger;
     if (e(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logger))
@@ -184,6 +253,13 @@ extern "C"
 
       env.frameCounter = 0;
 
+      screen16 = NULL;
+      screen32 = NULL;
+      if (!tryScreen32() && !tryScreen16()) {
+	env.logger(retro_log_level::RETRO_LOG_ERROR, "Couldn't find compatible pixel format\n");
+	return false;
+      }
+
       return true;
     }
 
@@ -193,6 +269,12 @@ extern "C"
   void retro_unload_game(void)
   {
     /* TODO */
+    if (screen16)
+      delete screen16;
+    if (screen32)
+      delete screen32;
+    screen16 = NULL;
+    screen32 = NULL;
   }
 
   void retro_run()
@@ -208,23 +290,18 @@ extern "C"
       auto* data = machine.memory().screenData();
       auto* screenPalette = machine.memory().paletteAt(retro8::gfx::SCREEN_PALETTE_INDEX);
 
-      auto pointer = screen;
-
-      for (size_t i = 0; i < r8::gfx::BYTES_PER_SCREEN; ++i)
-      {
-        const r8::gfx::color_byte_t* pixels = data + i;
-        const auto rc1 = colorTable.get(screenPalette->get((pixels)->low()));
-        const auto rc2 = colorTable.get(screenPalette->get((pixels)->high()));
-
-        *(pointer) = rc1;
-        *((pointer)+1) = rc2;
-        (pointer) += 2;
-      }
+      if (env.isRGB32)
+	screen32->draw(data, screenPalette);
+      else
+	screen16->draw(data, screenPalette);
 
       input.manageKeyRepeat();
     }
 
-    env.video(screen, r8::gfx::SCREEN_WIDTH, r8::gfx::SCREEN_HEIGHT, r8::gfx::SCREEN_WIDTH * sizeof(pixel_t));
+    if (env.isRGB32)
+      env.video(screen32->getBuffer(), r8::gfx::SCREEN_WIDTH, r8::gfx::SCREEN_HEIGHT, r8::gfx::SCREEN_WIDTH * sizeof(uint32_t));
+    else
+      env.video(screen16->getBuffer(), r8::gfx::SCREEN_WIDTH, r8::gfx::SCREEN_HEIGHT, r8::gfx::SCREEN_WIDTH * sizeof(uint16_t));
     ++env.frameCounter;
 
     machine.sound().renderSounds(audioBuffer, SAMPLES_PER_FRAME);
