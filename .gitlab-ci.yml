@@ -53,9 +53,13 @@ include:
 
   ################################## CONSOLES ################################
   # PlayStation Vita
-  #- project: 'libretro-infrastructure/ci-templates'
-    #file: '/vita-static.yml'
-    
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/vita-static.yml'
+
+  # Nintendo 3DS
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ctr-static.yml'
+
   # Nintendo GameCube
   #- project: 'libretro-infrastructure/ci-templates'
     #file: '/ngc-static.yml'
@@ -64,6 +68,10 @@ include:
   #- project: 'libretro-infrastructure/ci-templates'
     #file: '/wii-static.yml'
   
+  # Nintendo Switch
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/libnx-static.yml'
+
   # tvOS (AppleTV)
   - project: 'libretro-infrastructure/ci-templates'
     file: '/tvos-arm64.yml'
@@ -77,6 +85,9 @@ include:
     file: '/dingux-arm32.yml'
 
   #################################### MISC ##################################
+  # Emscripten
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/emscripten-static.yml'
 
 # Stages for building
 stages:
@@ -169,6 +180,12 @@ libretro-build-tvos-arm64:
     - .core-defs
     
 ################################### CONSOLES #################################
+# Nintendo 3DS
+libretro-build-ctr:
+  extends:
+    - .libretro-ctr-static-retroarch-master
+    - .core-defs
+
 # Nintendo GameCube
 #libretro-build-ngc:
   #extends:
@@ -180,12 +197,18 @@ libretro-build-tvos-arm64:
   #extends:
     #- .libretro-wii-static-retroarch-master
     #- .core-defs
-    
+
+# Nintendo Switch
+libretro-build-libnx-aarch64:
+  extends:
+    - .libretro-libnx-static-retroarch-master
+    - .core-defs
+
 # PlayStation Vita
-#libretro-build-vita:
-  #extends:
-    #- .libretro-vita-static-retroarch-master
-    #- .core-defs
+libretro-build-vita:
+  extends:
+    - .libretro-vita-static-retroarch-master
+    - .core-defs
 
 # RetroFW
 libretro-build-retrofw-mips32:
@@ -197,4 +220,11 @@ libretro-build-retrofw-mips32:
 libretro-build-miyoo-arm32:
   extends:
     - .libretro-miyoo-arm32-make-default
+    - .core-defs
+
+#################################### MISC ##################################
+# Emscripten
+libretro-build-emscripten:
+  extends:
+    - .libretro-emscripten-static-retroarch-master
     - .core-defs

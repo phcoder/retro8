@@ -90,10 +90,13 @@ extern "C"
 
   void retro_get_system_info(retro_system_info* info)
   {
-    std::memset(info, 0, sizeof(info));
+    std::memset(info, 0, sizeof(*info));
 
     info->library_name = "retro-8 (alpha)";
-    info->library_version = "0.1b";
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+    info->library_version = "0.1b" GIT_VERSION;
     info->need_fullpath = false;
     info->valid_extensions = "p8|png";
   }

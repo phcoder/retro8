@@ -49,6 +49,11 @@ ifeq ($(STATIC_LINKING), 1)
 EXT := a
 endif
 
+GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
+ifneq ($(GIT_VERSION)," unknown")
+	CXXFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
+endif
+
 ifneq (,$(findstring unix,$(platform)))
 	EXT ?= so
    TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -187,11 +192,30 @@ else ifeq ($(platform), miyoo)
    CFLAGS += -fmerge-all-constants -fno-math-errno -fno-stack-protector -fno-ident    
    CXXFLAGS := $(ASFLAGS) $(CFLAGS)
 else ifeq ($(platform), vita)
-   TARGET := $(TARGET_NAME)_vita.a
+   TARGET := $(TARGET_NAME)_libretro_vita.a
    CC = arm-vita-eabi-gcc
+   CXX = arm-vita-eabi-g++
    AR = arm-vita-eabi-ar
    CXXFLAGS += -Wl,-q -Wall -O3
 	STATIC_LINKING = 1
+# CTR/3DS
+else ifeq ($(platform), ctr)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
+	CXX = $(DEVKITARM)/bin/arm-none-eabi-g++$(EXE_EXT)
+	AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
+	CFLAGS += -DARM11 -D_3DS
+	CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
+	CFLAGS += -Wall -mword-relocations
+	CFLAGS += -fomit-frame-pointer -ffast-math
+	CXXFLAGS += -DARM11 -D_3DS
+	CXXFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
+	CXXFLAGS += -Wall -mword-relocations
+	CXXFLAGS += -fomit-frame-pointer -ffast-math
+	HAVE_RZLIB := 1
+	DISABLE_ERROR_LOGGING := 1
+	ARM = 1
+	STATIC_LINKING=1
 else
    CC ?= gcc
    TARGET := $(TARGET_NAME)_libretro.dll

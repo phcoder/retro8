@@ -150,6 +150,7 @@ static int os_execute (lua_State *L) {
     return 1;
   }
   */
+  return 1;
 }
 
 

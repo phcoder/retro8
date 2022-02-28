@@ -74,14 +74,14 @@ std::vector<std::string> Loader::loadLines(T& input)
 
 void Loader::loadFile(const std::string& path, Machine& dest)
 {
-  auto stream = std::ifstream(path);
+  std::ifstream stream(path);
   assert(stream.good());
   load(loadLines(stream), dest);
 }
 
 void Loader::loadRaw(const std::string& data, Machine& dest)
 {
-  auto stream = std::stringstream(data);
+  std::stringstream stream(data);
   load(loadLines(stream), dest);
 }
 
