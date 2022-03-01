@@ -15,8 +15,7 @@
 using namespace retro8;
 using namespace retro8::gfx;
 
-extern retro8::Machine machine;
-Machine& m = machine;
+Machine& m = *machine;
 
 TEST_CASE("cursor([x,] [y,] [col])")
 {

@@ -150,8 +150,6 @@ void DSP::fadeOut(int16_t amplitude, int16_t* dest, size_t samples)
   }
 }
 
-DSP dsp(44100);
-
 // C C# D D# E F F# G G# A A# B
 
 constexpr std::array<float, 12> Note::frequencies;

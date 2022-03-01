@@ -1,5 +1,6 @@
 #include "views/view_manager.h"
 #include "views/main_view.h"
+#include "vm/machine.h"
 
 /*
 * D-PAD Left - SDLK_LEFT
@@ -28,6 +29,7 @@ extern int testMain(int argc, char* argv[]);
 
 int main(int argc, char* argv[])
 {
+  machine = new retro8::Machine();
 #if TEST_MODE
   return testMain(argc, argv);
 #endif

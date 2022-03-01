@@ -69,8 +69,7 @@ SDLAudio sdlAudio;
 using namespace ui;
 namespace r8 = retro8;
 
-
-retro8::Machine machine;
+retro8::Machine *machine;
 
 GameView::GameView(ViewManager* manager) : manager(manager),
 _paused(false), _showFPS(false), _showCartridgeName(false)
@@ -80,8 +79,8 @@ _paused(false), _showFPS(false), _showCartridgeName(false)
 
 void GameView::update()
 {
-  machine.code().update();
-  machine.code().draw();
+  machine->code().update();
+  machine->code().draw();
 }
 
 
@@ -138,8 +137,8 @@ struct ColorMapper
 
 void GameView::rasterize()
 {
-  auto* data = machine.memory().screenData();
-  auto* screenPalette = machine.memory().paletteAt(r8::gfx::SCREEN_PALETTE_INDEX);
+  auto* data = machine->memory().screenData();
+  auto* screenPalette = machine->memory().paletteAt(r8::gfx::SCREEN_PALETTE_INDEX);
   uint32_t* output = _output.pixels();
 
   for (size_t i = 0; i < r8::gfx::BYTES_PER_SCREEN; ++i)
@@ -153,7 +152,6 @@ void GameView::rasterize()
     (output) += 2;
   }
 }
-
 
 
 bool init = false;
@@ -181,8 +179,8 @@ void GameView::render()
 
     _frameCounter = 0;
 
-    machine.code().loadAPI();
-    _input.setMachine(&machine);
+    machine->code().loadAPI();
+    _input.setMachine(machine);
 
 
     if (_path.empty())
@@ -193,7 +191,7 @@ void GameView::render()
       auto cartridge = loadPng(_path);
 
       retro8::io::Stegano stegano;
-      stegano.load(cartridge, machine);
+      stegano.load(cartridge, *machine);
 
       manager->setPngCartridge(static_cast<SDL_Surface*>(cartridge.userData));
       SDL_FreeSurface(static_cast<SDL_Surface*>(cartridge.userData));
@@ -201,27 +199,27 @@ void GameView::render()
     else
     {
       r8::io::Loader loader;
-      loader.loadFile(_path, machine);
+      loader.loadFile(_path, *machine);
       manager->setPngCartridge(nullptr);
     }
 
-    machine.memory().backupCartridge();
+    machine->memory().backupCartridge();
 
-    int32_t fps = machine.code().require60fps() ? 60 : 30;
+    int32_t fps = machine->code().require60fps() ? 60 : 30;
     manager->setFrameRate(fps);
 
-    if (machine.code().hasInit())
+    if (machine->code().hasInit())
     {
       /* init is launched on a different thread because some developers are using busy loops and manual flips */
       _initFuture = std::async(std::launch::async, []() {
         LOGD("Cartridge has _init() function, calling it.");
-        machine.code().init();
+        machine->code().init();
         LOGD("_init() function completed execution.");
       });
     }
 
-    machine.sound().init();
-    sdlAudio.init(&machine.sound());
+    machine->sound().init();
+    sdlAudio.init(&machine->sound());
     sdlAudio.resume();
 
     init = true;
@@ -259,7 +257,7 @@ void GameView::render()
   if (_showFPS)
   {
     char buffer[16];
-    sprintf(buffer, "%.0f/%c0", 1000.0f / manager->lastFrameTicks(), machine.code().require60fps() ? '6' : '3');
+    sprintf(buffer, "%.0f/%c0", 1000.0f / manager->lastFrameTicks(), machine->code().require60fps() ? '6' : '3');
     manager->text(buffer, 10, 10);
   }
 
@@ -276,7 +274,7 @@ void GameView::render()
       for (r8::coord_t y = 0; y < r8::gfx::SPRITE_SHEET_HEIGHT; ++y)
         for (r8::coord_t x = 0; x < r8::gfx::SPRITE_SHEET_PITCH; ++x)
         {
-          const r8::gfx::color_byte_t* data = machine.memory().as<r8::gfx::color_byte_t>(r8::address::SPRITE_SHEET + y * r8::gfx::SPRITE_SHEET_PITCH + x);
+          const r8::gfx::color_byte_t* data = machine->memory().as<r8::gfx::color_byte_t>(r8::address::SPRITE_SHEET + y * r8::gfx::SPRITE_SHEET_PITCH + x);
           RASTERIZE_PIXEL_PAIR(machine, dest, data);
         }
 
@@ -296,7 +294,7 @@ void GameView::render()
 
       for (r8::palette_index_t j = 0; j < 2; ++j)
       {
-        const r8::gfx::palette_t* palette = machine.memory().paletteAt(j);
+        const r8::gfx::palette_t* palette = machine->memory().paletteAt(j);
 
         for (size_t i = 0; i < r8::gfx::COLOR_COUNT; ++i)
           dest[j*16 + i] = colorTable.get(palette->get(r8::color_t(i)));
@@ -323,13 +321,13 @@ void GameView::render()
         {
           for (r8::coord_t tx = 0; tx < r8::gfx::TILE_MAP_WIDTH; ++tx)
           {
-            r8::sprite_index_t index = *machine.memory().spriteInTileMap(tx, ty);
+            r8::sprite_index_t index = *machine->memory().spriteInTileMap(tx, ty);
 
             for (r8::coord_t y = 0; y < r8::gfx::SPRITE_HEIGHT; ++y)
               for (r8::coord_t x = 0; x < r8::gfx::SPRITE_WIDTH; ++x)
               {
                 auto* dest = base + x + tx * r8::gfx::SPRITE_WIDTH + (y + ty * r8::gfx::SPRITE_HEIGHT) * tilemap->h;
-                const r8::gfx::color_byte_t& pixels = machine.memory().spriteAt(index)->byteAt(x, y);
+                const r8::gfx::color_byte_t& pixels = machine->memory().spriteAt(index)->byteAt(x, y);
                 RASTERIZE_PIXEL_PAIR(machine, dest, &pixels);
               }
           }
@@ -384,9 +382,9 @@ void GameView::handleKeyboardEvent(const SDL_Event& event)
   {
     if (event.type == SDL_KEYDOWN)
     {
-      bool s = machine.sound().isMusicEnabled();
-      machine.sound().toggleMusic(!s);
-      machine.sound().toggleSound(!s);
+      bool s = machine->sound().isMusicEnabled();
+      machine->sound().toggleMusic(!s);
+      machine->sound().toggleSound(!s);
     }
     break;
   }

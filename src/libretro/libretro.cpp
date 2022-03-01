@@ -20,7 +20,7 @@ constexpr int SAMPLE_RATE = 44100;
 constexpr int SAMPLES_PER_FRAME = SAMPLE_RATE / 60;
 constexpr int SOUND_CHANNELS = 2;
 
-r8::Machine machine;
+r8::Machine *machine;
 r8::io::Loader loader;
 
 r8::input::InputManager input;
@@ -146,10 +146,6 @@ extern "C"
   {
     audioBuffer = new int16_t[SAMPLE_RATE * 2];
     env.logger(retro_log_level::RETRO_LOG_INFO, "Initializing audio buffer of %d bytes\n", sizeof(int16_t) * SAMPLE_RATE * 2);
-
-    machine.font().load();
-    machine.code().loadAPI();
-    input.setMachine(&machine);
   }
 
   void retro_deinit()
@@ -211,6 +207,11 @@ extern "C"
   bool retro_load_game_special(unsigned game_type, const struct retro_game_info *info, size_t num_info) { return false; }
   bool retro_load_game(const retro_game_info* info)
   {
+    machine = new r8::Machine();
+    machine->font().load();
+    machine->code().loadAPI();
+    input.setMachine(machine);
+
     if (info && info->data)
     {
       input.reset();
@@ -234,23 +235,23 @@ extern "C"
           buf[i] = out[4 * i] | (out[4 * i + 1] << 8) | (out[4 * i + 2] << 16) | (out[4 * i + 3] << 24);
         }
         r8::io::PngData pngData = { buf, NULL, out.size() / 4 };
-        stegano.load(pngData, machine);
+        stegano.load(pngData, *machine);
         delete[] buf;
       }
       else
       {
         //TODO: not efficient since it's copied and it's not checking for '\0'
         std::string raw(bdata);
-        loader.loadRaw(raw, machine);
+        loader.loadRaw(raw, *machine);
       }
 
-      machine.memory().backupCartridge();
+      machine->memory().backupCartridge();
 
-      if (machine.code().hasInit())
+      if (machine->code().hasInit())
       {
         //_initFuture = std::async(std::launch::async, []() {
         LIBRETRO_LOG("[Retro8] Cartridge has _init() function, calling it.");
-          machine.code().init();
+          machine->code().init();
           LIBRETRO_LOG("[Retro8] _init() function completed execution.");
         //});
       }
@@ -288,20 +289,21 @@ extern "C"
       delete screen32;
     screen16 = NULL;
     screen32 = NULL;
+    delete machine;
   }
 
   void retro_run()
   {
     /* if code is at 60fps or every 2 frames (30fps) */
-    if (machine.code().require60fps() || env.frameCounter % 2 == 0)
+    if (machine->code().require60fps() || env.frameCounter % 2 == 0)
     {
       /* call _update and _draw of PICO-8 code */
-      machine.code().update();
-      machine.code().draw();
+      machine->code().update();
+      machine->code().draw();
 
       /* rasterize screen memory to ARGB framebuffer */
-      auto* data = machine.memory().screenData();
-      auto* screenPalette = machine.memory().paletteAt(retro8::gfx::SCREEN_PALETTE_INDEX);
+      auto* data = machine->memory().screenData();
+      auto* screenPalette = machine->memory().paletteAt(retro8::gfx::SCREEN_PALETTE_INDEX);
 
       if (env.isRGB32)
 	screen32->draw(data, screenPalette);
@@ -318,7 +320,7 @@ extern "C"
     ++env.frameCounter;
 
 #if SOUND_ENABLED
-    machine.sound().renderSounds(audioBuffer, SAMPLES_PER_FRAME);
+    machine->sound().renderSounds(audioBuffer, SAMPLES_PER_FRAME);
     
     /* duplicate channels */
     auto* audioBuffer2 = audioBuffer + SAMPLE_RATE;

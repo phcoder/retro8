@@ -51,6 +51,7 @@ namespace retro8
     Memory()
     {
       memset(memory, 0, 1024 * 32);
+      memset(_backup, 0, sizeof(_backup));
       paletteAt(gfx::DRAW_PALETTE_INDEX)->reset();
       paletteAt(gfx::SCREEN_PALETTE_INDEX)->reset();
       clipRect()->reset();

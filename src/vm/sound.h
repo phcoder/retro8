@@ -137,6 +137,8 @@ namespace retro8
       uint32_t sample;
       uint32_t position; // absolute
       uint32_t end;
+
+      SoundState(): sound(nullptr), soundIndex(0), sample(0), position(0), end(0) {}
     };
 
     struct MusicState
@@ -145,6 +147,8 @@ namespace retro8
       const Music* music;
       music_index_t pattern;
       uint8_t channelMask;
+
+      MusicState() : music(nullptr), pattern(0), channelMask(0) {}
     };
     
     class DSP
@@ -175,6 +179,7 @@ namespace retro8
 
     private:
       retro8::Memory& memory;
+      DSP dsp;
       
       struct Command
       {
@@ -223,7 +228,7 @@ namespace retro8
       
 
     public:
-      APU(Memory& memory) : memory(memory), _soundEnabled(true), _musicEnabled(true) { }
+      APU(Memory& memory) : memory(memory), _soundEnabled(true), _musicEnabled(true), dsp(44100) { }
 
       void init();
 

@@ -36,7 +36,11 @@ namespace retro8
   using color_index_t = uint8_t;
   using palette_index_t = size_t;
   using address_t = int32_t;
-  struct point_t { coord_t x, y; };
+  struct point_t {
+    coord_t x, y;
+    point_t(): x(0), y(0) { }
+    point_t(coord_t x_, coord_t y_): x(x_), y(y_) { }
+  };
 
   static constexpr coord_t TEXT_LINE_HEIGHT = 6;
 }

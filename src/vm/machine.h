@@ -79,3 +79,5 @@ namespace retro8
 #endif
   };
 }
+
+extern retro8::Machine *machine;
