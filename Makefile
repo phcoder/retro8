@@ -198,6 +198,15 @@ else ifeq ($(platform), vita)
    AR = arm-vita-eabi-ar
    CXXFLAGS += -Wl,-q -Wall -O3
 	STATIC_LINKING = 1
+# PSP
+else ifeq ($(platform), psp1)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = psp-gcc
+	CXX = psp-g++
+	AR = psp-ar
+	CFLAGS += -G0 -DPSP -DUSE_RGB565
+	CXXFLAGS += -G0 -DPSP -DUSE_RGB565
+	STATIC_LINKING=1
 # CTR/3DS
 else ifeq ($(platform), ctr)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
