@@ -16,8 +16,6 @@
 using namespace lua;
 using namespace retro8;
 
-extern retro8::Machine machine;
-
 using real_t = float;
 
 int pset(lua_State* L)
@@ -32,9 +30,9 @@ int pset(lua_State* L)
   if (args == 3)
     c = lua_tonumber(L, 3);
   else
-    c = machine.memory().penColor()->low();
+    c = machine->memory().penColor()->low();
 
-  machine.pset(x, y, static_cast<color_t>(c));
+  machine->pset(x, y, static_cast<color_t>(c));
 
   return 0;
 }
@@ -44,7 +42,7 @@ int pget(lua_State* L)
   int x = lua_tonumber(L, 1);
   int y = lua_tonumber(L, 2);
 
-  lua_pushinteger(L, machine.pget(x, y));
+  lua_pushinteger(L, machine->pget(x, y));
 
   return 1;
 }
@@ -53,7 +51,7 @@ int color(lua_State* L)
 {
   int c = lua_tonumber(L, 1);
 
-  machine.color(static_cast<color_t>(c));
+  machine->color(static_cast<color_t>(c));
 
   return 0;
 }
@@ -65,9 +63,9 @@ int line(lua_State* L)
   int x1 = lua_tonumber(L, 3);
   int y1 = lua_tonumber(L, 4);
 
-  int c = lua_gettop(L) == 5 ? lua_tonumber(L, 5) : machine.memory().penColor()->low();
+  int c = lua_gettop(L) == 5 ? lua_tonumber(L, 5) : machine->memory().penColor()->low();
 
-  machine.line(x0, y0, x1, y1, static_cast<color_t>(c));
+  machine->line(x0, y0, x1, y1, static_cast<color_t>(c));
 
   return 0;
 }
@@ -85,9 +83,9 @@ int rect(lua_State* L)
   int x1 = lua_tonumber(L, 3);
   int y1 = lua_tonumber(L, 4);
 
-  int c = lua_gettop(L) == 5 ? lua_tonumber(L, 5) : machine.memory().penColor()->low();
+  int c = lua_gettop(L) == 5 ? lua_tonumber(L, 5) : machine->memory().penColor()->low();
 
-  machine.rect(x0, y0, x1, y1, static_cast<color_t>(c));
+  machine->rect(x0, y0, x1, y1, static_cast<color_t>(c));
 
   return 0;
 }
@@ -100,9 +98,9 @@ int rectfill(lua_State* L)
   int x1 = lua_tonumber(L, 3);
   int y1 = lua_tonumber(L, 4);
 
-  int c = lua_gettop(L) >= 5 ? lua_tonumber(L, 5) : machine.memory().penColor()->low();
+  int c = lua_gettop(L) >= 5 ? lua_tonumber(L, 5) : machine->memory().penColor()->low();
 
-  machine.rectfill(x0, y0, x1, y1, static_cast<color_t>(c));
+  machine->rectfill(x0, y0, x1, y1, static_cast<color_t>(c));
 
   return 0;
 }
@@ -112,9 +110,9 @@ int circ(lua_State* L)
   int x = lua_tonumber(L, 1);
   int y = lua_tonumber(L, 2);
   int r = lua_gettop(L) >= 3 ? lua_tonumber(L, 3) : 4;
-  int c = lua_gettop(L) >= 4 ? lua_tonumber(L, 4) : machine.memory().penColor()->low();
+  int c = lua_gettop(L) >= 4 ? lua_tonumber(L, 4) : machine->memory().penColor()->low();
 
-  machine.circ(x, y, r, static_cast<color_t>(c));
+  machine->circ(x, y, r, static_cast<color_t>(c));
 
   return 0;
 }
@@ -124,9 +122,9 @@ int circfill(lua_State* L)
   int x = lua_tonumber(L, 1);
   int y = lua_tonumber(L, 2);
   int r = lua_gettop(L) >= 3 ? lua_tonumber(L, 3) : 4;
-  int c = lua_gettop(L) >= 4 ? lua_tonumber(L, 4) : machine.memory().penColor()->low();
+  int c = lua_gettop(L) >= 4 ? lua_tonumber(L, 4) : machine->memory().penColor()->low();
 
-  machine.circfill(x, y, r, color_t(c));
+  machine->circfill(x, y, r, color_t(c));
 
   return 0;
 }
@@ -135,7 +133,7 @@ int cls(lua_State* L)
 {
   int c = lua_gettop(L) == 1 ? lua_tonumber(L, -1) : 0;
 
-  machine.cls(color_t(c));
+  machine->cls(color_t(c));
 
   return 0;
 }
@@ -162,11 +160,11 @@ int spr(lua_State* L)
     if (lua_gettop(L) >= 7)
       fy = lua_toboolean(L, 7);
 
-    machine.spr(idx, x, y, w, h, fx, fy);
+    machine->spr(idx, x, y, w, h, fx, fy);
   }
   else
     /* optimized path */
-    machine.spr(idx, x, y);
+    machine->spr(idx, x, y);
 
   return 0;
 }
@@ -176,7 +174,7 @@ int sget(lua_State* L)
   int x = lua_tonumber(L, 1);
   int y = lua_tonumber(L, 2);
 
-  lua_pushnumber(L, machine.memory().spriteSheet(x, y)->get(x));
+  lua_pushnumber(L, machine->memory().spriteSheet(x, y)->get(x));
 
   return 1;
 }
@@ -185,9 +183,9 @@ int sset(lua_State* L)
 {
   int x = lua_tonumber(L, 1);
   int y = lua_tonumber(L, 2);
-  color_t c = lua_gettop(L) >= 3 ? color_t((int)lua_tonumber(L, 3)) : machine.memory().penColor()->low();
+  color_t c = lua_gettop(L) >= 3 ? color_t((int)lua_tonumber(L, 3)) : machine->memory().penColor()->low();
 
-  machine.memory().spriteSheet(x, y)->set(x, c);
+  machine->memory().spriteSheet(x, y)->set(x, c);
 
   return 0;
 }
@@ -198,8 +196,8 @@ int pal(lua_State* L)
   /* no arguments, reset palette */
   if (lua_gettop(L) == 0)
   {
-    machine.memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->reset();
-    machine.memory().paletteAt(gfx::SCREEN_PALETTE_INDEX)->reset();
+    machine->memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->reset();
+    machine->memory().paletteAt(gfx::SCREEN_PALETTE_INDEX)->reset();
   }
   else
   {
@@ -210,7 +208,7 @@ int pal(lua_State* L)
     if (lua_gettop(L) == 3)
       index = lua_tonumber(L, 3);
 
-    machine.pal(static_cast<color_t>(c0), static_cast<color_t>(c1), index);
+    machine->pal(static_cast<color_t>(c0), static_cast<color_t>(c1), index);
   }
   return 0;
 }
@@ -220,8 +218,8 @@ int palt(lua_State* L)
   /* no arguments, reset palette */
   if (lua_gettop(L) == 0)
   {
-    machine.memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->resetTransparency();
-    machine.memory().paletteAt(gfx::SCREEN_PALETTE_INDEX)->resetTransparency();
+    machine->memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->resetTransparency();
+    machine->memory().paletteAt(gfx::SCREEN_PALETTE_INDEX)->resetTransparency();
   }
   else
   {
@@ -229,7 +227,7 @@ int palt(lua_State* L)
     int f = lua_toboolean(L, 2);
     palette_index_t index = gfx::DRAW_PALETTE_INDEX;
 
-    machine.memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->transparent(c, f);
+    machine->memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->transparent(c, f);
   }
   return 0;
 }
@@ -239,7 +237,7 @@ namespace draw
   int clip(lua_State* L)
   {
     if (lua_gettop(L) == 0)
-      machine.memory().clipRect()->reset();
+      machine->memory().clipRect()->reset();
     else
     {
       uint8_t x0 = lua_tonumber(L, 1);
@@ -247,7 +245,7 @@ namespace draw
       uint8_t w = lua_tonumber(L, 3);
       uint8_t h = lua_tonumber(L, 4);
 
-      machine.memory().clipRect()->set(x0, y0, std::min<int32_t>(x0 + w, gfx::SCREEN_WIDTH-1), std::min<int32_t>(y0 + h, gfx::SCREEN_HEIGHT-1));
+      machine->memory().clipRect()->set(x0, y0, std::min<int32_t>(x0 + w, gfx::SCREEN_WIDTH-1), std::min<int32_t>(y0 + h, gfx::SCREEN_HEIGHT-1));
     }
 
     return 0;
@@ -260,7 +258,7 @@ int camera(lua_State* L)
 {
   int16_t cx = lua_gettop(L) >= 1 ? lua_tonumber(L, 1) : 0;
   int16_t cy = lua_gettop(L) == 2 ? lua_tonumber(L, 2) : 0;
-  machine.memory().camera()->set(cx, cy);
+  machine->memory().camera()->set(cx, cy);
 
   return 0;
 }
@@ -278,7 +276,7 @@ int map(lua_State* L)
   if (lua_gettop(L) == 7)
     layer = lua_tonumber(L, 7);
 
-  machine.map(cx, cy, x, y, cw, ch, layer);
+  machine->map(cx, cy, x, y, cw, ch, layer);
 
   return 0;
 }
@@ -291,7 +289,7 @@ int mget(lua_State* L)
   sprite_index_t index = 0;
 
   if (x >= 0 && x <= gfx::TILE_MAP_WIDTH && y >= 0 && y < gfx::TILE_MAP_HEIGHT)
-    index = *machine.memory().spriteInTileMap(x, y);
+    index = *machine->memory().spriteInTileMap(x, y);
 
   //printf("mget(%d, %d) = %d\n", x, y, index);
 
@@ -306,7 +304,7 @@ int mset(lua_State* L)
   int y = lua_tonumber(L, 2);
   retro8::sprite_index_t index = lua_tonumber(L, 3);
 
-  *machine.memory().spriteInTileMap(x, y) = index;
+  *machine->memory().spriteInTileMap(x, y) = index;
 
   return 0;
 }
@@ -318,21 +316,21 @@ int print(lua_State* L)
 
   if (lua_gettop(L) == 1)
   {
-    auto* cursor = machine.memory().cursor();
+    auto* cursor = machine->memory().cursor();
 
     retro8::coord_t x = cursor->x();
     retro8::coord_t y = cursor->y();
-    retro8::color_t c = machine.memory().penColor()->low();
-    machine.print(text, x, y, c);
+    retro8::color_t c = machine->memory().penColor()->low();
+    machine->print(text, x, y, c);
     cursor->set(cursor->x(), cursor->y() + TEXT_LINE_HEIGHT); //TODO: check height
   }
   else if (lua_gettop(L) >= 3)
   {
     int x = lua_tonumber(L, 2);
     int y = lua_tonumber(L, 3);
-    int c = lua_gettop(L) == 4 ? lua_tonumber(L, 4) : machine.memory().penColor()->low();
+    int c = lua_gettop(L) == 4 ? lua_tonumber(L, 4) : machine->memory().penColor()->low();
 
-    machine.print(text, x, y, static_cast<retro8::color_t>(c));
+    machine->print(text, x, y, static_cast<retro8::color_t>(c));
   }
   else
     assert(false);
@@ -347,16 +345,16 @@ int cursor(lua_State* L)
   {
     int x = lua_tonumber(L, 1);
     int y = lua_tonumber(L, 2);
-    *machine.memory().cursor() = { (uint8_t)x, (uint8_t)y };
+    *machine->memory().cursor() = { (uint8_t)x, (uint8_t)y };
 
     if (lua_gettop(L) == 3)
     {
       retro8::color_t color = static_cast<retro8::color_t>((int)lua_tonumber(L, 2));
-      machine.memory().penColor()->low(color);
+      machine->memory().penColor()->low(color);
     }
   }
   else
-    *machine.memory().cursor() = { 0, 0 };
+    *machine->memory().cursor() = { 0, 0 };
 
   return 0;
 }
@@ -386,7 +384,7 @@ namespace sprites
   int fget(lua_State* L)
   {
     retro8::sprite_index_t index = lua_tonumber(L, 1);
-    retro8::sprite_flags_t flags = *machine.memory().spriteFlagsFor(index);
+    retro8::sprite_flags_t flags = *machine->memory().spriteFlagsFor(index);
 
     if (lua_gettop(L) == 2)
     {
@@ -395,7 +393,7 @@ namespace sprites
       lua_pushboolean(L, (flags >> index) & 0x1 ? true : false);
     }
     else
-      lua_pushnumber(L, *machine.memory().spriteFlagsFor(index));
+      lua_pushnumber(L, *machine->memory().spriteFlagsFor(index));
 
     return 1;
   }
@@ -403,7 +401,7 @@ namespace sprites
   int fset(lua_State* L)
   {
     retro8::sprite_index_t index = lua_tonumber(L, 1);
-    retro8::sprite_flags_t* flags = machine.memory().spriteFlagsFor(index);
+    retro8::sprite_flags_t* flags = machine->memory().spriteFlagsFor(index);
 
     if (lua_gettop(L) == 3)
     {
@@ -438,7 +436,7 @@ namespace sprites
     bool flipX = lua_to_or_default(L, boolean, 8, false);
     bool flipY = lua_to_or_default(L, boolean, 8, false);
 
-    machine.sspr(sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY);
+    machine->sspr(sx, sy, sw, sh, dx, dy, dw, dh, flipX, flipY);
 
     return 0;
   }
@@ -497,7 +495,7 @@ namespace math
     assert(lua_isnumber(L, 1));
 
     real_t seed = lua_tonumber(L, 1);
-    machine.state().rnd.seed(seed);
+    machine->state().rnd.seed(seed);
 
     return 0;
   }
@@ -507,7 +505,7 @@ namespace math
   int rnd(lua_State* L)
   {
     real_t max = lua_gettop(L) >= 1 ? lua_tonumber(L, 1) : 1.0f;
-    lua_pushnumber(L, (machine.state().rnd() / (float)machine.state().rnd.max()) * max);
+    lua_pushnumber(L, (machine->state().rnd() / (float)machine->state().rnd.max()) * max);
 
     return 1;
   }
@@ -682,23 +680,27 @@ namespace sound
 {
   int music(lua_State* L)
   {
+#if SOUND_ENABLED
     sfx::music_index_t index = lua_tonumber(L, 1);
     int32_t fadeMs = lua_to_or_default(L, number, 2, 1);
     int32_t mask = lua_to_or_default(L, number, 3, 0);
 
-    machine.sound().music(index, fadeMs, mask);
+    machine->sound().music(index, fadeMs, mask);
+#endif
 
     return 0;
   }
 
   int sfx(lua_State* L)
   {
+#if SOUND_ENABLED
     sfx::sound_index_t index = lua_tonumber(L, 1);
     sfx::channel_index_t channel = lua_to_or_default(L, number, 2, -1);
     int32_t start = lua_to_or_default(L, number, 3, 0);
-    int32_t end = lua_to_or_default(L, number, 3, machine.memory().sound(index)->length());
+    int32_t end = lua_to_or_default(L, number, 3, machine->memory().sound(index)->length());
 
-    machine.sound().play(index, channel, start, end);
+    machine->sound().play(index, channel, start, end);
+#endif
 
     return 0;
   }
@@ -773,7 +775,7 @@ namespace platform
     address_t addr = lua_tonumber(L, 1);
     uint8_t byte = lua_tonumber(L, 2);
 
-    machine.memory().base()[addr] = byte;
+    machine->memory().base()[addr] = byte;
 
     return 0;
   }
@@ -783,8 +785,8 @@ namespace platform
     address_t addr = lua_tonumber(L, 1);
     uint32_t value = lua_tonumber(L, 2);
 
-    machine.memory().base()[addr] = value & 0xFF;
-    machine.memory().base()[addr+1] = (value & 0xFF00) >> 8;
+    machine->memory().base()[addr] = value & 0xFF;
+    machine->memory().base()[addr+1] = (value & 0xFF00) >> 8;
 
     return 0;
   }
@@ -794,10 +796,10 @@ namespace platform
     address_t addr = lua_tonumber(L, 1);
     uint32_t value = lua_tonumber(L, 2);
 
-    machine.memory().base()[addr] = value & 0xFF;
-    machine.memory().base()[addr + 1] = (value & 0xFF00) >> 8;
-    machine.memory().base()[addr + 2] = (value & 0xFF0000) >> 16;
-    machine.memory().base()[addr + 3] = (value & 0xFF000000) >> 24;
+    machine->memory().base()[addr] = value & 0xFF;
+    machine->memory().base()[addr + 1] = (value & 0xFF00) >> 8;
+    machine->memory().base()[addr + 2] = (value & 0xFF0000) >> 16;
+    machine->memory().base()[addr + 3] = (value & 0xFF000000) >> 24;
 
     return 0;
   }
@@ -805,7 +807,7 @@ namespace platform
   int peek(lua_State* L)
   {
     address_t addr = lua_tonumber(L, 1);
-    uint8_t value = machine.memory().base()[addr];
+    uint8_t value = machine->memory().base()[addr];
 
     lua_pushnumber(L, value);
 
@@ -815,8 +817,8 @@ namespace platform
   int peek2(lua_State* L)
   {
     address_t addr = lua_tonumber(L, 1);
-    uint8_t low = machine.memory().base()[addr];
-    uint8_t high = machine.memory().base()[addr+1];
+    uint8_t low = machine->memory().base()[addr];
+    uint8_t high = machine->memory().base()[addr+1];
 
     lua_pushnumber(L, (low | high << 8));
 
@@ -826,10 +828,10 @@ namespace platform
   int peek4(lua_State* L)
   {
     address_t addr = lua_tonumber(L, 1);
-    uint8_t b1 = machine.memory().base()[addr];
-    uint8_t b2 = machine.memory().base()[addr + 1];
-    uint8_t b3 = machine.memory().base()[addr + 2];
-    uint8_t b4 = machine.memory().base()[addr + 3];
+    uint8_t b1 = machine->memory().base()[addr];
+    uint8_t b2 = machine->memory().base()[addr + 1];
+    uint8_t b3 = machine->memory().base()[addr + 2];
+    uint8_t b4 = machine->memory().base()[addr + 3];
 
     lua_pushnumber(L, b1 | (b2 << 8) | (b3 << 16) | (b4 << 24));
 
@@ -843,7 +845,7 @@ namespace platform
     int32_t length = lua_tonumber(L, 3);
 
     if (length > 0)
-      std::memset(machine.memory().base() + addr, 0, length);
+      std::memset(machine->memory().base() + addr, 0, length);
 
     return 0;
   }
@@ -856,11 +858,11 @@ namespace platform
 
     //TODO: optimize overlap case?
     if ((src + length < dest) || (dest + length < src))
-      std::memcpy(machine.memory().base() + dest, machine.memory().base() + src, length);
+      std::memcpy(machine->memory().base() + dest, machine->memory().base() + src, length);
     else
     {
       for (size_t i = 0; i < length; ++i)
-        machine.memory().base()[dest + i] = machine.memory().base()[src + i];
+        machine->memory().base()[dest + i] = machine->memory().base()[src + i];
     }
 
     return 0;
@@ -874,7 +876,7 @@ namespace platform
     address_t src = lua_to_or_default(L, number, 1, 0);
     int32_t length = lua_to_or_default(L, number, 1, address::CART_DATA_LENGTH);
     
-    std::memcpy(machine.memory().base() + dest, machine.memory().backup() + src, length);
+    std::memcpy(machine->memory().base() + dest, machine->memory().backup() + src, length);
 
     return 0;
   }
@@ -892,7 +894,7 @@ namespace platform
       size_t bindex = lua_tonumber(L, 1);
 
       if (bindex < buttons.size())
-        lua_pushboolean(L, machine.state().buttons[index].isSet(buttons[bindex]));
+        lua_pushboolean(L, machine->state().buttons[index].isSet(buttons[bindex]));
       else
         lua_pushboolean(L, false);
 
@@ -900,7 +902,7 @@ namespace platform
     /* push whole bitmask*/
     else
     {
-      lua_pushnumber(L, machine.state().buttons[index].value);
+      lua_pushnumber(L, machine->state().buttons[index].value);
     }
 
     //TODO: finish for player 2?
@@ -919,12 +921,12 @@ namespace platform
       using bt_t = retro8::button_t;
       static constexpr std::array<bt_t, 6> buttons = { bt_t::LEFT, bt_t::RIGHT, bt_t::UP, bt_t::DOWN, bt_t::ACTION1, bt_t::ACTION2 };
       size_t bindex = lua_tonumber(L, 1);
-      lua_pushboolean(L, machine.state().previousButtons[index].isSet(buttons[bindex]));
+      lua_pushboolean(L, machine->state().previousButtons[index].isSet(buttons[bindex]));
     }
     /* push whole bitmask*/
     else
     {
-      lua_pushnumber(L, machine.state().previousButtons[index].value);
+      lua_pushnumber(L, machine->state().previousButtons[index].value);
     }
 
     //TODO: finish for player?
@@ -941,7 +943,7 @@ namespace platform
 
     switch (s)
     {
-    case Stat::FRAME_RATE: lua_pushnumber(L, machine.code().require60fps() ? 60 : 30); break;
+    case Stat::FRAME_RATE: lua_pushnumber(L, machine->code().require60fps() ? 60 : 30); break;
     default: lua_pushnumber(L, 0);
 
     }
@@ -960,7 +962,7 @@ namespace platform
     index_t idx = lua_tonumber(L, 1);
     integral_t value = lua_tonumber(L, 2);
 
-    *machine.memory().cartData(idx) = value;
+    *machine->memory().cartData(idx) = value;
     return 0;
   }
 
@@ -968,7 +970,7 @@ namespace platform
   {
     index_t idx = lua_tonumber(L, 1);
 
-    lua_pushnumber(L, *machine.memory().cartData(idx));
+    lua_pushnumber(L, *machine->memory().cartData(idx));
 
     return 1;
   }

@@ -11,8 +11,6 @@
 
 using namespace ui;
 
-extern retro8::Machine machine;
-
 ui::ViewManager::ViewManager() : SDL<ui::ViewManager, ui::ViewManager>(*this, *this), _font(),
 _gameView(new GameView(this)), _menuView(new MenuView(this))
 {
@@ -46,7 +44,7 @@ bool ui::ViewManager::loadData()
     _font.releaseSurface();
   }
 
-  machine.font().load();
+  machine->font().load();
 
   return true;
 }

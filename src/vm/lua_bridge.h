@@ -26,7 +26,7 @@ namespace lua
     const void* _draw;
 
   public:
-    Code() : L(nullptr) { }
+    Code() : L(nullptr), _init(nullptr), _update(nullptr), _update60(nullptr), _draw(nullptr) { }
     ~Code();
 
     void loadAPI();

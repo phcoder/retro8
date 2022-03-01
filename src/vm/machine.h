@@ -26,7 +26,9 @@ namespace retro8
   private:
     State _state;
     Memory _memory;
+#if SOUND_ENABLED
     sfx::APU _sound;
+#endif
     gfx::Font _font;
     lua::Code _code;
 
@@ -36,7 +38,10 @@ namespace retro8
 
 
   public:
-    Machine() : _sound(_memory)
+    Machine()
+#if SOUND_ENABLED
+      : _sound(_memory)
+#endif
     {
     }
 
@@ -69,6 +74,10 @@ namespace retro8
     Memory& memory() { return _memory; }
     gfx::Font& font() { return _font; }
     lua::Code& code() { return _code; }
+#if SOUND_ENABLED
     sfx::APU& sound() { return _sound; }
+#endif
   };
 }
+
+extern retro8::Machine *machine;

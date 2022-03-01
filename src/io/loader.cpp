@@ -173,6 +173,7 @@ void Loader::load(const std::vector<std::string>& lines, Machine& m)
         ++fy;
         break;
       }
+#if SOUND_ENABLED
       case State::SFX:
       {
         assert(line.length() == DIGITS_PER_SOUND);
@@ -234,6 +235,7 @@ void Loader::load(const std::vector<std::string>& lines, Machine& m)
         
         break;
       }
+#endif
       }
 
     }

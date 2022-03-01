@@ -104,7 +104,7 @@ namespace retro8
       uint8_t value;
 
     public:
-      color_byte_t() = default;
+      color_byte_t() : value(0) {}
       color_byte_t(color_t low, color_t high) : value(low | (high << 4)) { }
       inline color_t low() const { return static_cast<color_t>(value & 0x0F); }
       inline color_t high() const { return static_cast<color_t>((value >> 4) & 0x0F); }
@@ -209,7 +209,7 @@ namespace retro8
 
     public:
       Font() { }
-      inline const sequential_sprite_t* glyph(char c) const { return c < 128 ? &glyphs[c] : nullptr; }
+      inline const sequential_sprite_t* glyph(char c) const { return (unsigned) c < 128 ? &glyphs[(unsigned) c] : nullptr; }
       inline const sequential_sprite_t* specialGlyph(size_t i) const { return &glyphs[128+i]; }
 
       void load();

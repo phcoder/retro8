@@ -1,7 +1,5 @@
 #include "main_view.h"
 
-extern retro8::Machine machine;
-
 using namespace ui;
 
 struct MenuEntry
@@ -65,15 +63,15 @@ MenuView::MenuView(ViewManager* gvm) : _gvm(gvm), _cartridge(nullptr)
   };
 
   optionsMenu[SOUND].lambda = [this]() {
-    bool v = !machine.sound().isSoundEnabled();
-    machine.sound().toggleSound(v);
+    bool v = !machine->sound().isSoundEnabled();
+    machine->sound().toggleSound(v);
     updateLabels();
   };
 
 
   optionsMenu[MUSIC].lambda = [this]() {
-    bool v = !machine.sound().isMusicEnabled();
-    machine.sound().toggleMusic(v);
+    bool v = !machine->sound().isMusicEnabled();
+    machine->sound().toggleMusic(v);
     updateLabels();
   };
 
@@ -123,8 +121,8 @@ void MenuView::handleMouseEvent(const SDL_Event& event)
 
 void MenuView::updateLabels()
 {
-  optionsMenu[MUSIC].caption = std::string("music ") + (machine.sound().isMusicEnabled() ? "on" : "off");
-  optionsMenu[SOUND].caption = std::string("sound ") + (machine.sound().isSoundEnabled() ? "on" : "off");
+  optionsMenu[MUSIC].caption = std::string("music ") + (machine->sound().isMusicEnabled() ? "on" : "off");
+  optionsMenu[SOUND].caption = std::string("sound ") + (machine->sound().isSoundEnabled() ? "on" : "off");
   optionsMenu[SHOW_FPS].caption = std::string("show fps ") + (_gvm->gameView()->isFPSShown() ? "on" : "off");
 
   auto scaler = _gvm->gameView()->scaler();
@@ -168,7 +166,7 @@ void MenuView::render()
   _gvm->text("retro8", bx, by, { 0, 47, 255 }, TextAlign::CENTER, 4.0f);
   _gvm->text("v0.1b", bx + _gvm->textWidth("retro8", 4.0)/2 - _gvm->textWidth("v0.1b", 1.0), by + 24, { 0, 47, 255 }, TextAlign::LEFT, 1.0f);
 
-  retro8::point_t menuBase = { bx, by + 70 };
+  retro8::point_t menuBase(bx, by + 70);
 
   for (auto it = menu->begin(); it != menu->end(); ++it)
   {
