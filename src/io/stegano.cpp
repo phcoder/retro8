@@ -255,6 +255,7 @@ void Stegano::load(const PngData& data, Machine& m)
   constexpr size_t SPRITE_SHEET_SIZE = gfx::SPRITE_SHEET_HEIGHT * gfx::SPRITE_SHEET_WIDTH / gfx::PIXEL_TO_BYTE_RATIO;
   constexpr size_t TILE_MAP_SIZE = gfx::TILE_MAP_WIDTH * gfx::TILE_MAP_HEIGHT * sizeof(sprite_index_t) / 2;
   constexpr size_t SPRITE_FLAGS_SIZE = gfx::SPRITE_COUNT * sizeof(sprite_flags_t);
+#if SOUND_ENABLED
   constexpr size_t MUSIC_SIZE = sfx::MUSIC_COUNT * sizeof(sfx::music_t);
   constexpr size_t SOUND_SIZE = sfx::SOUND_COUNT * sizeof(sfx::sound_t);
 
@@ -262,6 +263,7 @@ void Stegano::load(const PngData& data, Machine& m)
   static_assert(sizeof(sfx::sound_t) == 68, "Must be 68 bytes");
 
   static_assert(RAW_DATA_LENGTH == SPRITE_SHEET_SIZE + TILE_MAP_SIZE + SPRITE_FLAGS_SIZE + MUSIC_SIZE + SOUND_SIZE, "Must be equal");
+#endif
   assert(data.length == IMAGE_WIDTH * IMAGE_HEIGHT);
 
   auto* d = data.data;

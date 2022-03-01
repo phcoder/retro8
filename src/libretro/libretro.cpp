@@ -249,7 +249,9 @@ extern "C"
         //});
       }
 
-      machine.sound().init();
+#if SOUND_ENABLED
+      machine->sound().init();
+#endif
 
       env.frameCounter = 0;
 
@@ -309,6 +311,7 @@ extern "C"
       env.video(screen16->getBuffer(), r8::gfx::SCREEN_WIDTH, r8::gfx::SCREEN_HEIGHT, r8::gfx::SCREEN_WIDTH * sizeof(uint16_t));
     ++env.frameCounter;
 
+#if SOUND_ENABLED
     machine.sound().renderSounds(audioBuffer, SAMPLES_PER_FRAME);
     
     /* duplicate channels */
@@ -320,6 +323,10 @@ extern "C"
     }
     
     env.audioBatch(audioBuffer2, SAMPLES_PER_FRAME);
+#else
+    memset(audioBuffer, 0, sizeof(audioBuffer[0]) * 2 * SAMPLES_PER_FRAME);
+    env.audioBatch(audioBuffer, SAMPLES_PER_FRAME);
+#endif
 
     /* manage input */
     {

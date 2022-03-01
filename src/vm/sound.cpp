@@ -5,9 +5,10 @@
 #include <random>
 #include <cassert>
 
+#if SOUND_ENABLED
+
 using namespace retro8;
 using namespace retro8::sfx;
-
 
 inline void DSP::squareWave(uint32_t frequency, int16_t amplitude, int16_t offset, int32_t position, int16_t* dest, size_t samples)
 {
@@ -427,3 +428,5 @@ void APU::renderSounds(int16_t* dest, size_t totalSamples)
     }
   }
 }
+
+#endif
