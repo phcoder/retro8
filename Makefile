@@ -284,6 +284,14 @@ else ifeq ($(platform), ps2)
 	CFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
 	CXXFLAGS += -G0 -DPS2 -DUSE_RGB565 -DABGR1555
 	STATIC_LINKING=1
+# DOS
+else ifeq ($(platform), dos)
+	TARGET := $(TARGET_NAME)_libretro_$(platform).a
+	CC = i586-pc-msdosdjgpp-gcc
+	AR = i586-pc-msdosdjgpp-ar
+	CXX = i586-pc-msdosdjgpp-g++
+	PLATFORM_DEFINES += -march=i386
+	STATIC_LINKING=1
 else
    CC ?= gcc
    TARGET := $(TARGET_NAME)_libretro.dll

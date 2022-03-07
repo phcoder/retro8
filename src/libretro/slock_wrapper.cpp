@@ -1,7 +1,7 @@
 #include "slock_wrapper.h"
 
 #ifndef USE_SLOCK_WRAPPER
-#elif defined(PS2) || defined(WIIU) // Single-threaded
+#elif defined(PS2) || defined(WIIU) || defined(__DJGPP__) // Single-threaded
 slock_wrap::slock_wrap() {
 }
 
