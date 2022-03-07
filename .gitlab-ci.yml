@@ -240,6 +240,24 @@ libretro-build-vita:
     - .libretro-vita-static-retroarch-master
     - .core-defs
 
+# OpenDingux
+libretro-build-dingux-mips32:
+  extends:
+    - .libretro-dingux-mips32-make-default
+    - .core-defs
+
+# OpenDingux Beta
+libretro-build-dingux-odbeta-mips32:
+  extends:
+    - .libretro-dingux-odbeta-mips32-make-default
+    - .core-defs
+
+# OpenDingux Beta
+libretro-build-rs90-odbeta-mips32:
+  extends:
+    - .libretro-rs90-odbeta-mips32-make-default
+    - .core-defs
+
 # RetroFW
 libretro-build-retrofw-mips32:
   extends:

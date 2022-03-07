@@ -255,6 +255,26 @@ else ifeq ($(platform), ctr)
 	DISABLE_ERROR_LOGGING := 1
 	ARM = 1
 	STATIC_LINKING=1
+# GCW0
+else ifeq ($(platform), gcw0)
+	TARGET := $(TARGET_NAME)_libretro.so
+	CC = /opt/gcw0-toolchain/usr/bin/mipsel-linux-gcc
+	AR = /opt/gcw0-toolchain/usr/bin/mipsel-linux-ar
+	fpic := -fPIC
+	SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
+	DISABLE_ERROR_LOGGING := 1
+	CFLAGS += -march=mips32 -mtune=mips32r2 -mhard-float
+	LIBS = -lm
+# RS90
+else ifeq ($(platform), rs90)
+   TARGET := $(TARGET_NAME)_libretro.so
+   CC = /opt/rs90-toolchain/usr/bin/mipsel-linux-gcc
+   CXX = /opt/rs90-toolchain/usr/bin/mipsel-linux-g++
+   AR = /opt/rs90-toolchain/usr/bin/mipsel-linux-ar
+   fpic := -fPIC
+   SHARED := -shared -Wl,-version-script=$(CORE_DIR)/link.T
+   CFLAGS += -fomit-frame-pointer -ffast-math -march=mips32 -mtune=mips32
+   CXXFLAGS += $(CFLAGS)
 # PS2
 else ifeq ($(platform), ps2)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
