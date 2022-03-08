@@ -114,8 +114,8 @@ inline void DSP::noise(uint32_t frequency, int16_t amplitude, int32_t position, 
 {
   static uint32_t lfsr_state = 0x12345678;
   static const uint8_t poly = 0x34; // second-smallest maximal-period polynomial.
-  static const int trailing_zeros = 1; // 1 trailing 0.
-  static const int significant_bits = 5; // 5 bits from highest set to lowest set
+  static const int trailing_zeros = 2; // 2 trailing 0.
+  static const int significant_bits = 4; // 4 bits from highest set to lowest set
   static const int batch = 4; // Batch to handle in a table
   static const int table_size = 1 << (batch + significant_bits);
   static const int table_mask = table_size - 1;
