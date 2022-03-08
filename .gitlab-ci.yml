@@ -30,6 +30,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-i686.yml'
 
+  # DJGPP
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/djgpp-static.yml'
+
   # MacOS 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/osx-x64.yml'
@@ -60,18 +64,22 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/vita-static.yml'
 
+  # PlayStation2
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ps2-static.yml'
+
   # Nintendo 3DS
   - project: 'libretro-infrastructure/ci-templates'
     file: '/ctr-static.yml'
 
   # Nintendo GameCube
-  #- project: 'libretro-infrastructure/ci-templates'
-    #file: '/ngc-static.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/ngc-static.yml'
 
   # Nintendo Wii
-  #- project: 'libretro-infrastructure/ci-templates'
-    #file: '/wii-static.yml'
-  
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/wii-static.yml'
+
   # Nintendo WiiU
   - project: 'libretro-infrastructure/ci-templates'
     file: '/wiiu-static.yml'
@@ -144,6 +152,12 @@ libretro-build-osx-arm64:
     - .libretro-osx-arm64-make-default
     - .core-defs
 
+# DJGPP
+libretro-build-djgpp-i586:
+  extends:
+    - .libretro-djgpp-static-retroarch-master
+    - .core-defs
+
 ################################### CELLULAR #################################
 # Android ARMv7a
 android-armeabi-v7a:
@@ -194,6 +208,12 @@ libretro-build-psp:
     - .libretro-psp-static-retroarch-master
     - .core-defs
 
+# PlayStation2
+libretro-build-ps2:
+  extends:
+    - .libretro-ps2-static-retroarch-master
+    - .core-defs
+
 # Nintendo 3DS
 libretro-build-ctr:
   extends:
@@ -201,16 +221,16 @@ libretro-build-ctr:
     - .core-defs
 
 # Nintendo GameCube
-#libretro-build-ngc:
-  #extends:
-    #- .libretro-ngc-static-retroarch-master
-    #- .core-defs
+libretro-build-ngc:
+  extends:
+    - .libretro-ngc-static-retroarch-master
+    - .core-defs
 
 # Nintendo Wii
-#libretro-build-wii:
-  #extends:
-    #- .libretro-wii-static-retroarch-master
-    #- .core-defs
+libretro-build-wii:
+  extends:
+    - .libretro-wii-static-retroarch-master
+    - .core-defs
 
 # Nintendo WiiU
 libretro-build-wiiu:
@@ -228,6 +248,24 @@ libretro-build-libnx-aarch64:
 libretro-build-vita:
   extends:
     - .libretro-vita-static-retroarch-master
+    - .core-defs
+
+# OpenDingux
+libretro-build-dingux-mips32:
+  extends:
+    - .libretro-dingux-mips32-make-default
+    - .core-defs
+
+# OpenDingux Beta
+libretro-build-dingux-odbeta-mips32:
+  extends:
+    - .libretro-dingux-odbeta-mips32-make-default
+    - .core-defs
+
+# OpenDingux Beta
+libretro-build-rs90-odbeta-mips32:
+  extends:
+    - .libretro-rs90-odbeta-mips32-make-default
     - .core-defs
 
 # RetroFW
