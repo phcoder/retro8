@@ -73,7 +73,7 @@ namespace retro8
     };
 
     
-    static color_t colorForRGB(uint32_t color)
+    static inline color_t colorForRGB(uint32_t color)
     {
       switch (color & 0x00ffffff)
       {

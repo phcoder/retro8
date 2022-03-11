@@ -228,7 +228,7 @@ namespace retro8
       
 
     public:
-      APU(Memory& memory) : memory(memory), _soundEnabled(true), _musicEnabled(true), dsp(44100) { }
+      APU(Memory& memory) : memory(memory), dsp(44100), _soundEnabled(true), _musicEnabled(true) { }
 
       void init();
 

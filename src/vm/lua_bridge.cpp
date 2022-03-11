@@ -225,7 +225,6 @@ int palt(lua_State* L)
   {
     color_t c = color_t(int(lua_tonumber(L, 1)));
     int f = lua_toboolean(L, 2);
-    palette_index_t index = gfx::DRAW_PALETTE_INDEX;
 
     machine->memory().paletteAt(gfx::DRAW_PALETTE_INDEX)->transparent(c, f);
   }
