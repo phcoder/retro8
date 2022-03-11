@@ -135,6 +135,24 @@ static bool tryScreen16() {
   return true;
 }
 
+static struct retro_input_descriptor input_desc[] = {
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "O" },
+    { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "X" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT,  "Left" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,  "Down" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,    "Up" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A,     "O" },
+    { 1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B,     "X" },
+
+    { 0 },
+};
+
+
 extern "C"
 {
   unsigned retro_api_version()
@@ -185,6 +203,8 @@ extern "C"
     retro_log_callback logger;
     if (e(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logger))
       env.logger = logger.log;
+
+    e(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_desc);
   }
 
   void retro_set_video_refresh(retro_video_refresh_t callback) { env.video = callback; }
@@ -338,41 +358,32 @@ extern "C"
 
     /* manage input */
     {
-      struct BtPair {
-        unsigned player;
-        int16_t rabt;
-        size_t r8bt;
-        bool isSet;
+      const static int16_t mapping[retro8::BUTTON_COUNT] = {
+        RETRO_DEVICE_ID_JOYPAD_LEFT,
+        RETRO_DEVICE_ID_JOYPAD_RIGHT,
+        RETRO_DEVICE_ID_JOYPAD_UP,
+        RETRO_DEVICE_ID_JOYPAD_DOWN,
+        RETRO_DEVICE_ID_JOYPAD_A,
+        RETRO_DEVICE_ID_JOYPAD_B,
       };
-
-      static std::array<BtPair, retro8::BUTTON_COUNT + 2> mapping = { {
-        { 0, RETRO_DEVICE_ID_JOYPAD_LEFT, 0, false },
-        { 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, 1, false },
-        { 0, RETRO_DEVICE_ID_JOYPAD_UP, 2, false },
-        { 0, RETRO_DEVICE_ID_JOYPAD_DOWN, 3, false },
-        { 0, RETRO_DEVICE_ID_JOYPAD_A, 4, false },
-        { 0, RETRO_DEVICE_ID_JOYPAD_B, 5, false },
-        { 1, RETRO_DEVICE_ID_JOYPAD_X, 4, false },
-        { 1, RETRO_DEVICE_ID_JOYPAD_Y, 5, false },
-
-      } };
-
-
-      //TODO: add mapping for action1/2 of player 2 because it's used by some games
+      static bool btnState[retro8::PLAYER_COUNT][retro8::BUTTON_COUNT];
 
       env.inputPoll();
-      for (auto& entry : mapping)
+      for (unsigned player = 0; player < retro8::PLAYER_COUNT; player++)
       {
-        const bool isSet = env.inputState(entry.player, RETRO_DEVICE_JOYPAD, 0, entry.rabt);
-        const bool wasSet = entry.isSet;
+	for (unsigned r8bt = 0; r8bt < retro8::BUTTON_COUNT; r8bt++)
+	{
+	  const bool isSet = env.inputState(player, RETRO_DEVICE_JOYPAD, 0, mapping[r8bt]);
+	  const bool wasSet = btnState[player][r8bt];
 
-        if (wasSet != isSet)
-          input.manageKey(entry.player, entry.r8bt, isSet);
+	  if (wasSet != isSet)
+	    input.manageKey(player, r8bt, isSet);
 
-        entry.isSet = isSet;
+	  btnState[player][r8bt] = isSet;
+	}
+
+	input.tick();
       }
-
-      input.tick();
     }
 
   }
