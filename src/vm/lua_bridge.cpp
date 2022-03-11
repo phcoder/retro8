@@ -844,7 +844,7 @@ namespace platform
     int32_t length = lua_tonumber(L, 3);
 
     if (length > 0)
-      std::memset(machine->memory().base() + addr, 0, length);
+      std::memset(machine->memory().base() + addr, value, length);
 
     return 0;
   }
