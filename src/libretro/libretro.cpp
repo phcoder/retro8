@@ -78,7 +78,13 @@ public:
 private:
   struct ColorMapper16
   {
-    r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const { return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | ((b & 0xf8) >> 3); }
+    r8::gfx::ColorTable::pixel_t operator()(uint8_t r, uint8_t g, uint8_t b) const {
+#ifdef ABGR1555
+      return ((b & 0xf8) << 7) | ((g & 0xf8) << 2) | ((r & 0xf8) >> 3);
+#else
+      return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | ((b & 0xf8) >> 3);
+#endif
+    }
   };
 };
 
